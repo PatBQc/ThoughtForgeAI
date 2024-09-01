@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { CLAUDE_API_KEY } from '@env';
+import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
