@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList, Platf
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { sendToWhisper } from '../services/whisperService';
+import { getChatResponse } from '../services/claudeService';
 import { generateAudioFileName } from '../utils/utils';
 import RNFS from 'react-native-fs';
 
@@ -49,11 +50,15 @@ const BrainstormScreen: React.FC = () => {
       const transcription = await sendToWhisper(result);
       if (transcription) {
         setMessages(prev => [...prev, { id: Date.now().toString(), text: transcription, type: 'user' }]);
-        // Ici, vous ajouteriez la logique pour obtenir la réponse du "cerveau"
-        // et l'ajouter comme un message de type 'ai'
-        // Par exemple :
-        const aiResponse = 'Réponse du cerveau 🧠';
-        setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: aiResponse, type: 'ai' }]);
+
+        // Obtenir la réponse de Claude
+        try {
+          const claudeResponse = await getChatResponse(transcription);
+          setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: claudeResponse, type: 'ai' }]);
+        } catch (error) {
+          console.error('Error getting response from Claude:', error);
+          setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: "Désolé, je n'ai pas pu obtenir une réponse. Veuillez réessayer.", type: 'ai' }]);
+        }
       }
     } else {
       const fileName = generateAudioFileName(conversationIndex);
