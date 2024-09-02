@@ -4,6 +4,7 @@ import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { sendToWhisper } from '../services/whisperService';
 import { getChatResponse } from '../services/claudeService';
+import { updateConversationJson } from '../services/conversationService';
 import { generateAudioFileName } from '../utils/utils';
 import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -21,7 +22,7 @@ const BrainstormScreen: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordedFilePath, setRecordedFilePath] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageIndex, setMessageIndex] = useState<number>(0);
+  const messageIndexRef = useRef<number>(0);
   const [conversationPrefix, setConversationPrefix] = useState<string>('');
 
   const flatListRef = useRef<FlatList>(null);
@@ -40,22 +41,26 @@ const BrainstormScreen: React.FC = () => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
-  const generateFileName = useCallback((index: number, role: 'user' | 'assistant'): string => {
+  const generateFileName = useCallback((role: 'user' | 'assistant'): string => {
     let prefix = conversationPrefix;
-    if (index === 0 && prefix === '') {
+    if (messageIndexRef.current === 0 && prefix === '') {
       prefix = generateAudioFileName();
+      setConversationPrefix(prefix);
     }
-
-    const fileName = `${prefix}${index}-${role}.mp4`;
-    return fileName;
+  
+    const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
+    const path = Platform.OS === 'ios' 
+      ? `${RNFS.DocumentDirectoryPath}/${fileName}`
+      : `${RNFS.ExternalDirectoryPath}/${fileName}`;
+    return path;
   }, [conversationPrefix]);
 
   useEffect(() => {
-    if (messageIndex === 0 && conversationPrefix === '') {
+    if (messageIndexRef.current === 0 && conversationPrefix === '') {
       const newPrefix = generateAudioFileName();
       setConversationPrefix(newPrefix);
     }
-  }, [messageIndex, conversationPrefix]);
+  }, [messageIndexRef.current, conversationPrefix]);
 
   const checkAndRequestPermission = async () => {
     const permission = Platform.OS === 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO;
@@ -73,64 +78,63 @@ const BrainstormScreen: React.FC = () => {
       console.log('Stopped recording, file path: ', result);
       const transcription = await sendToWhisper(result);
       if (transcription) {
-        const newFileName = generateFileName(messageIndex, 'user');
+        const newFileName = generateFileName('user');
         const newUserMessage: Message = { 
           id: Date.now().toString(), 
           role: 'user', 
           content: transcription,
           fileName: newFileName
         };
-        setMessages(prev => [...prev, newUserMessage]);
-        setMessageIndex(prevIndex => prevIndex + 1);
-
+        updateConversation([...messages, newUserMessage]);
+        messageIndexRef.current += 1;
+  
         try {
           const claudeMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
           claudeMessages.push({ role: 'user', content: transcription });
-
-          const newAssistantFileName = generateFileName(messageIndex + 1, 'assistant');
-          const path = Platform.OS === 'ios' 
-          ? `${RNFS.DocumentDirectoryPath}/${newAssistantFileName}`
-          : `${RNFS.ExternalDirectoryPath}/${newAssistantFileName}`;
-
-          const claudeResponse = await getChatResponse(claudeMessages, path);
+  
+          const newAssistantFileName = generateFileName('assistant');
+          const claudeResponse = await getChatResponse(claudeMessages, newAssistantFileName);
           const newAssistantMessage: Message = { 
             id: (Date.now() + 1).toString(), 
             role: 'assistant', 
             content: claudeResponse,
             fileName: newAssistantFileName
           };
-          setMessages(prev => [...prev, newAssistantMessage]);
-          setMessageIndex(prevIndex => prevIndex + 1);
+          updateConversation([...messages, newUserMessage, newAssistantMessage]);
+          messageIndexRef.current += 1;
         } catch (error) {
           console.error('Error getting response from Claude:', error);
-          const errorFileName = generateFileName(messageIndex, 'assistant');
+          const errorFileName = generateFileName('assistant');
           const errorMessage: Message = { 
             id: (Date.now() + 1).toString(), 
             role: 'assistant', 
             content: "Désolé, je n'ai pas pu obtenir une réponse. Veuillez réessayer.",
             fileName: errorFileName
           };
-          setMessages(prev => [...prev, errorMessage]);
-          setMessageIndex(prevIndex => prevIndex + 1);
+          updateConversation([...messages, newUserMessage, errorMessage]);
+          messageIndexRef.current += 1;
         }
       }
     } else {
-      const fileName = generateFileName(messageIndex, 'user');
-      const path = Platform.OS === 'ios' 
-        ? `${RNFS.DocumentDirectoryPath}/${fileName}`
-        : `${RNFS.ExternalDirectoryPath}/${fileName}`;
-
-      const result = await audioRecorderPlayer.startRecorder(path);
+      const fileName = generateFileName('user');
+      const result = await audioRecorderPlayer.startRecorder(fileName);
       setIsRecording(true);
       console.log('Started recording, file path: ', result);
     }
   };
 
-  const startNewConversation = () => {
+  const startNewConversation = useCallback(() => {
     setMessages([]);
-    setMessageIndex(0);
-    setConversationPrefix('');
-  };
+    messageIndexRef.current = 0;
+    const newPrefix = generateAudioFileName();
+    setConversationPrefix(newPrefix);
+    updateConversationJson(newPrefix, []);
+  }, []);
+
+  const updateConversation = useCallback(async (newMessages: Message[]) => {
+    setMessages(newMessages);
+    await updateConversationJson(conversationPrefix, newMessages);
+  }, [conversationPrefix]);
 
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.aiBubble]}>

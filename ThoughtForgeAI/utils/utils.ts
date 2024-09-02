@@ -7,5 +7,8 @@ export const generateAudioFileName = (): string => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    return `ThoughtForgeAI-${year}-${month}-${day}-${hours}-${minutes}-${seconds}-`;
+    return `ThoughtForgeAI-${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
   };
+
+
+  
