@@ -8,6 +8,7 @@ interface AudioPlayerProps {
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioFile, onClose }) => {
+  console.log('Audio file:', audioFile);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -40,8 +41,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioFile, onClose }) => {
       <Text style={styles.title}>{audioFile}</Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={isPlaying ? onStopPlay : onStartPlay}
-      >
+        onPress={isPlaying ? onStopPlay : onStartPlay}>
         <Text style={styles.buttonText}>
           {isPlaying ? 'Stop' : 'Play'}
         </Text>

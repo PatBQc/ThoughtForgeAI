@@ -17,8 +17,8 @@ interface ConversationData {
 
 const getConversationDirectory = () => {
   return Platform.OS === 'ios' 
-    ? `${RNFS.DocumentDirectoryPath}/conversations`
-    : `${RNFS.ExternalDirectoryPath}/conversations`;
+    ? `${RNFS.DocumentDirectoryPath}`
+    : `${RNFS.ExternalDirectoryPath}`;
 };
 
 export const updateConversationJson = async (conversationId: string, messages: any[]) => {
@@ -85,8 +85,8 @@ export const loadConversations = async (): Promise<ConversationData[]> => {
 export const getConversationFiles = async (conversationId: string): Promise<string[]> => {
   try {
     const directory = Platform.OS === 'ios' 
-      ? RNFS.DocumentDirectoryPath
-      : RNFS.ExternalDirectoryPath;
+    ? `${RNFS.DocumentDirectoryPath}/${conversationId}`
+    : `${RNFS.ExternalDirectoryPath}/${conversationId}`;
     
     const allFiles = await RNFS.readDir(directory);
     return allFiles

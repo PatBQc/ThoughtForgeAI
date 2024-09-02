@@ -49,9 +49,13 @@ const BrainstormScreen: React.FC = () => {
     }
   
     const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
-    const path = Platform.OS === 'ios' 
-      ? `${RNFS.DocumentDirectoryPath}/${fileName}`
-      : `${RNFS.ExternalDirectoryPath}/${fileName}`;
+    const directory = Platform.OS === 'ios' 
+      ? `${RNFS.DocumentDirectoryPath}/${prefix}`
+      : `${RNFS.ExternalDirectoryPath}/${prefix}`;
+
+    RNFS.mkdir(directory, { NSURLIsExcludedFromBackupKey: false });
+
+    const path = `${directory}/${fileName}`;
     return path;
   }, [conversationPrefix]);
 
