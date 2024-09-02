@@ -5,10 +5,19 @@ import { SYSTEM_PROMPT as DEFAULT_SYSTEM_PROMPT } from '../utils/systemPrompt';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
-export const getChatResponse = async (userMessage: string): Promise<string> => {
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const getChatResponse = async (messages: Message[]): Promise<string> => {
   try {
     const storedSystemPrompt = await AsyncStorage.getItem('SYSTEM_PROMPT');
     const systemPrompt = storedSystemPrompt || DEFAULT_SYSTEM_PROMPT;
+
+    const allMessages: Message[] = [
+      ...messages
+    ];
 
     const response = await axios.post(
         CLAUDE_API_URL,
@@ -16,9 +25,7 @@ export const getChatResponse = async (userMessage: string): Promise<string> => {
           model: 'claude-3-5-sonnet-20240620',
           max_tokens: 1000,
           system: systemPrompt,
-          messages: [
-            { role: "user", content: userMessage },
-          ],
+          messages: allMessages,
         },
         {
           headers: {

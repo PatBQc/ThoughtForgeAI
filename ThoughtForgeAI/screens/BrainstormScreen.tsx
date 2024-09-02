@@ -7,12 +7,10 @@ import { getChatResponse } from '../services/claudeService';
 import { generateAudioFileName } from '../utils/utils';
 import RNFS from 'react-native-fs';
 
-type MessageType = 'user' | 'ai';
-
 interface Message {
   id: string;
-  text: string;
-  type: MessageType;
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
@@ -61,15 +59,24 @@ const BrainstormScreen: React.FC = () => {
       console.log('Stopped recording, file path: ', result);
       const transcription = await sendToWhisper(result);
       if (transcription) {
-        setMessages(prev => [...prev, { id: Date.now().toString(), text: transcription, type: 'user' }]);
-
-        // Obtenir la réponse de Claude
+        const newUserMessage: Message = { id: Date.now().toString(), role: 'user', content: transcription };
+        setMessages(prev => [...prev, newUserMessage]);
+        
         try {
-          const claudeResponse = await getChatResponse(transcription);
-          setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: claudeResponse, type: 'ai' }]);
+          const claudeMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
+          claudeMessages.push({ role: 'user', content: transcription });
+          
+          const claudeResponse = await getChatResponse(claudeMessages);
+          const newAssistantMessage: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: claudeResponse };
+          setMessages(prev => [...prev, newAssistantMessage]);
         } catch (error) {
           console.error('Error getting response from Claude:', error);
-          setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: "Désolé, je n'ai pas pu obtenir une réponse. Veuillez réessayer.", type: 'ai' }]);
+          const errorMessage: Message = { 
+            id: (Date.now() + 1).toString(), 
+            role: 'assistant', 
+            content: "Désolé, je n'ai pas pu obtenir une réponse. Veuillez réessayer." 
+          };
+          setMessages(prev => [...prev, errorMessage]);
         }
       }
     } else {
@@ -85,12 +92,18 @@ const BrainstormScreen: React.FC = () => {
     }
   };
 
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.aiBubble]}>
+      <Text style={styles.messageText}>{item.content}</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         ref={flatListRef}
         data={messages}
-        renderItem={({ item }) => <MessageBubble {...item} />}
+        renderItem={renderMessage}
         keyExtractor={item => item.id}
         style={styles.messageList}
         onContentSizeChange={scrollToBottom}
