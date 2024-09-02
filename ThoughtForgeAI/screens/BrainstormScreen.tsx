@@ -41,19 +41,12 @@ const BrainstormScreen: React.FC = () => {
   };
 
   const generateFileName = useCallback((index: number, role: 'user' | 'assistant'): string => {
-    console.log('');
-    console.log('Generating file name for index:', index);
-    console.log('Conversation prefix:', conversationPrefix);
-
     let prefix = conversationPrefix;
     if (index === 0 && prefix === '') {
-      console.log('Generating new prefix');
       prefix = generateAudioFileName();
-      console.log('New prefix:', prefix);
     }
 
     const fileName = `${prefix}${index}-${role}.mp4`;
-    console.log('Generated file name:', fileName);
     return fileName;
   }, [conversationPrefix]);
 
