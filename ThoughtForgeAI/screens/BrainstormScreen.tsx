@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { sendToWhisper } from '../services/whisperService';
@@ -29,9 +29,21 @@ const BrainstormScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationIndex, setConversationIndex] = useState<number>(0);
 
+  const flatListRef = useRef<FlatList>(null);
+
   useEffect(() => {
     checkAndRequestPermission();
   }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  };
 
   const checkAndRequestPermission = async () => {
     const permission = Platform.OS === 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO;
@@ -76,10 +88,13 @@ const BrainstormScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={messages}
         renderItem={({ item }) => <MessageBubble {...item} />}
         keyExtractor={item => item.id}
         style={styles.messageList}
+        onContentSizeChange={scrollToBottom}
+        onLayout={scrollToBottom}
       />
       <TouchableOpacity
         style={[styles.button, isRecording && styles.buttonRecording]}
