@@ -1,4 +1,4 @@
-export const generateAudioFileName = (index: number): string => {
+export const generateAudioFileName = (): string => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -7,5 +7,5 @@ export const generateAudioFileName = (index: number): string => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}-Conversation-${index}.mp4`;
+    return `ThoughtForgeAI-${year}-${month}-${day}-${hours}-${minutes}-${seconds}-`;
   };
