@@ -21,6 +21,12 @@ export const sendToWhisper = async (filePath: string): Promise<string | null> =>
       },
     });
     console.log('Transcription:', response.data.text);
+
+    // Save transcription to a .txt file
+    const txtFilePath = filePath.replace('.mp4', '.txt');
+    await RNFS.writeFile(txtFilePath, response.data.text, 'utf8');
+    console.log('Transcription saved to:', txtFilePath);
+
     return response.data.text;
   } catch (error) {
     console.error('Error sending to Whisper:', error);
