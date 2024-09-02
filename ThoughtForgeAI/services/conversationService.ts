@@ -97,3 +97,17 @@ export const getConversationFiles = async (conversationId: string): Promise<stri
     return [];
   }
 };
+
+export const readConversationContent = async (conversationId: string): Promise<any> => {
+    const conversationPath = getConversationDirectory();
+    const jsonFilePath = `${conversationPath}/${conversationId}.json`;
+
+    try {
+        const content = await RNFS.readFile(jsonFilePath, 'utf8');
+        return JSON.parse(content);
+    } catch (error) {
+        console.error('Error reading conversation content:', error);
+        return null;
+    }
+};
+
