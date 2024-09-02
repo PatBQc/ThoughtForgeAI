@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { loadConversations, getConversationFiles } from '../services/conversationService';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -13,11 +14,7 @@ const ConversationFilesScreen: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedConversation, setExpandedConversation] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAllConversations();
-  }, []);
-
-  const loadAllConversations = async () => {
+  const loadAllConversations = useCallback(async () => {
     try {
       const conversationsData = await loadConversations();
       const conversationsWithFiles = await Promise.all(
@@ -30,7 +27,13 @@ const ConversationFilesScreen: React.FC = () => {
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAllConversations();
+    }, [loadAllConversations])
+  );
 
   const toggleConversationExpansion = (conversationId: string) => {
     setExpandedConversation(prevId => prevId === conversationId ? null : conversationId);
@@ -66,6 +69,8 @@ const ConversationFilesScreen: React.FC = () => {
         data={conversations}
         renderItem={renderConversation}
         keyExtractor={item => item.id}
+        refreshing={false}
+        onRefresh={loadAllConversations}
       />
     </View>
   );
