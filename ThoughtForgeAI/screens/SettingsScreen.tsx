@@ -1,7 +1,21 @@
-import React from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 
 const SettingsScreen: React.FC = () => {
+  const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
+
+  const saveSystemPrompt = async () => {
+    try {
+      await AsyncStorage.setItem('SYSTEM_PROMPT', systemPrompt);
+      alert('System prompt saved successfully!');
+    } catch (error) {
+      console.error('Error saving system prompt:', error);
+      alert('Failed to save system prompt');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
@@ -12,7 +26,17 @@ const SettingsScreen: React.FC = () => {
           secureTextEntry
         />
       </View>
-      {/* Ajoutez d'autres paramètres ici */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>System Prompt:</Text>
+        <TextInput 
+          style={styles.input} 
+          multiline
+          numberOfLines={10}
+          value={systemPrompt}
+          onChangeText={setSystemPrompt}
+        />
+        <Button title="Save System Prompt" onPress={saveSystemPrompt} />
+      </View>
     </SafeAreaView>
   );
 };
