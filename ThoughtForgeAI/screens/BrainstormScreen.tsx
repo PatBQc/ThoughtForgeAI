@@ -87,8 +87,12 @@ const BrainstormScreen: React.FC = () => {
           const claudeMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
           claudeMessages.push({ role: 'user', content: transcription });
 
-          const claudeResponse = await getChatResponse(claudeMessages);
-          const newAssistantFileName = generateFileName(messageIndex, 'assistant');
+          const newAssistantFileName = generateFileName(messageIndex + 1, 'assistant');
+          const path = Platform.OS === 'ios' 
+          ? `${RNFS.DocumentDirectoryPath}/${newAssistantFileName}`
+          : `${RNFS.ExternalDirectoryPath}/${newAssistantFileName}`;
+
+          const claudeResponse = await getChatResponse(claudeMessages, path);
           const newAssistantMessage: Message = { 
             id: (Date.now() + 1).toString(), 
             role: 'assistant', 
