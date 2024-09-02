@@ -15,7 +15,7 @@ const TabIcon: React.FC<TabIconProps> = ({ focused, color, size, routeName }) =>
     case 'Brainstorm':
       iconName = focused ? 'bulb' : 'bulb-outline';
       break;
-    case 'Audio Files':
+    case 'Conversations':
       iconName = focused ? 'list' : 'list-outline';
       break;
     case 'Settings':
