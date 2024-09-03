@@ -81,7 +81,6 @@ ThoughtForgeAI is a React Native application designed to facilitate AI-assisted 
 
 ## Screenshots
 
-[Insert screenshot of Brainstorm screen]
 ### Brainstorm
 ![image](https://github.com/user-attachments/assets/9ebe8d33-ed65-4c2f-ae34-bf5ebcd9230e)
 
