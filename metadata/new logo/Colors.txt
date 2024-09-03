@@ -1,0 +1,8 @@
+White: FDFDFD
+Orange: FB9D1C
+Background: 367480
+
+White on Background = 5.2 contrast (passes WCAG)
+White on Orange = 2.08 (fails WCAG)
+Orange on Background = 2.5 (fails WCAG)
+Black on Background = 3.97 (fails)

@@ -1,0 +1,22 @@
+Create a modern, scalable logo for a mobile app called "ThoughtForgeAI". The logo should be:
+
+1. Concept: Blend the ideas of thought, AI, and forging/creation
+2. Style: Minimalist and contemporary, with clean lines and simple shapes
+3. Colors: Use a palette of cool blues and teals, with accents of warm orange or gold to represent AI and human thought respectively
+4. Main element: A stylized brain or neuron network, subtly incorporating circuit-like patterns
+5. Secondary element: A small anvil or hammer icon, suggesting the "forge" aspect
+6. Typography: Include "ThoughtForgeAI" in a modern, sans-serif font, ensuring readability at small sizes
+7. Layout: The icon should be able to stand alone for small displays, with text integrated for larger formats
+8. Scalability: Design with vector graphics to ensure clarity at both small (16x16 pixels) and large sizes
+9. Negative space: Utilize negative space creatively to add depth and complexity
+10. Balance: Maintain visual balance between the icon elements and the text
+11. Versatility: Ensure the logo works well on both light and dark backgrounds
+12. Uniqueness: Avoid clichéd AI imagery like robots or gears
+
+Additional notes:
+- The logo should convey intelligence, creativity, and technological innovation
+- Consider subtle gradients for depth, but ensure they translate well to monochrome
+- Test the logo at various sizes to ensure all elements remain clear and recognizable
+- The overall impression should be sophisticated yet approachable
+
+Please provide multiple variations of this concept, including versions with and without the text, and in both color and monochrome.
