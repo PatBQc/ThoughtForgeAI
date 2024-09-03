@@ -81,13 +81,19 @@ ThoughtForgeAI is a React Native application designed to facilitate AI-assisted 
 
 ## Screenshots
 
-[Insert screenshot of Brainstorm screen]
+### Brainstorm
+![image](https://github.com/user-attachments/assets/9ebe8d33-ed65-4c2f-ae34-bf5ebcd9230e)
+
 The Brainstorm screen is where users can start new conversations with the AI. It features a record button to capture voice input and displays the conversation history.
 
-[Insert screenshot of Conversations screen]
+### Conversations
+![image](https://github.com/user-attachments/assets/2022ddf6-74ff-4ffe-95ea-e93f4815335e)
+
 The Conversations screen lists all previous brainstorming sessions. Users can view details of each conversation and access audio recordings.
 
-[Insert screenshot of Settings screen]
+### Settings
+![image](https://github.com/user-attachments/assets/8be78d6b-e31b-4fcb-a6c9-21c5fcd77701)
+
 The Settings screen allows users to configure app preferences and manage API connections.
 
 ## Roadmap
