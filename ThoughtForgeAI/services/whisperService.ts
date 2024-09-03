@@ -29,7 +29,11 @@ export const sendToWhisper = async (filePath: string): Promise<string | null> =>
 
     return response.data.text;
   } catch (error) {
-    console.error('Error sending to Whisper:', error);
-    return null;
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error:', error.response?.data);
+    } else {
+      console.error('Error calling OpenAI Whisper API:', error);
+    }
+    throw error;
   }
 };

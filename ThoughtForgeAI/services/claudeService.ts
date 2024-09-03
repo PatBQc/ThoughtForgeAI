@@ -49,7 +49,7 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
     if (axios.isAxiosError(error)) {
       console.error('Axios error:', error.response?.data);
     } else {
-      console.error('Error calling Claude API:', error);
+      console.error('Error calling Anthropic Claude API:', error);
     }
     throw error;
   }
