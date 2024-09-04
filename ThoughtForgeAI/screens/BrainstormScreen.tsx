@@ -142,7 +142,6 @@ const BrainstormScreen: React.FC = () => {
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.aiBubble]}>
       <Text style={styles.messageText}>{item.content}</Text>
-      <Text style={styles.fileNameText}>{item.fileName}</Text>
     </View>
   );
 
@@ -233,11 +232,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  fileNameText: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginTop: 5,
   },
 });
 
