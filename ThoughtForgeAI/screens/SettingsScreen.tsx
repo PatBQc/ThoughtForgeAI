@@ -15,8 +15,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SYSTEM_PROMPT } from '../utils/systemPrompt';
-import { apiService } from '../services/apiService';
-import { OPENAI_API_KEY, ANTHROPIC_API_KEY } from '@env';
+import { apiKeyService } from '../services/apiKeyService';
+import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from '@env';
 
 const SettingsScreen: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
@@ -28,8 +28,8 @@ const SettingsScreen: React.FC = () => {
 
   useEffect(() => {
     const loadApiKeys = async () => {
-      const openAIKeyStored = await apiService.getApiKey('openai');
-      const anthropicKeyStored = await apiService.getApiKey('anthropic');
+      const openAIKeyStored = await apiKeyService.getApiKey('OPENAI_API_KEY');
+      const anthropicKeyStored = await apiKeyService.getApiKey('ANTHROPIC_API_KEY');
 
       setOpenAIKey(openAIKeyStored || OPENAI_API_KEY || '');
       setAnthropicKey(anthropicKeyStored || ANTHROPIC_API_KEY || '');
@@ -66,7 +66,7 @@ const SettingsScreen: React.FC = () => {
   };
 
   const saveApiKey = async (provider: string, key: string) => {
-    await apiService.saveApiKey(provider, key);
+    await apiKeyService.saveApiKey(provider, key);
     alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API key saved successfully!`);
   };
 
@@ -97,7 +97,7 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setOpenAIFocused(false)}
                 />
               </View>
-              <Button title="Save OpenAI Key" onPress={() => saveApiKey('openai', openAIKey)} />
+              <Button title="Save OpenAI Key" onPress={() => saveApiKey('OPENAI_API_KEY', openAIKey)} />
             </View>
 
             <View style={styles.section}>
@@ -113,7 +113,7 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setAnthropicFocused(false)}
                 />
               </View>
-              <Button title="Save Anthropic Key" onPress={() => saveApiKey('anthropic', anthropicKey)} />
+              <Button title="Save Anthropic Key" onPress={() => saveApiKey('ANTHROPIC_API_KEY', anthropicKey)} />
             </View>
 
             <View style={styles.section}>

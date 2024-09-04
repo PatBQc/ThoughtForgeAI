@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { CLAUDE_API_KEY } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SYSTEM_PROMPT as DEFAULT_SYSTEM_PROMPT } from '../utils/systemPrompt';
+import { apiKeyService } from '../services/apiKeyService';
 import RNFS from 'react-native-fs';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -20,6 +20,9 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
       ...messages,
     ];
 
+    const key = await apiKeyService.ANTHROPIC_API_KEY();
+    console.log('--getChatResponse--Anthropic API key:', key);
+
     const response = await axios.post(
       CLAUDE_API_URL,
       {
@@ -31,7 +34,7 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
       {
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': CLAUDE_API_KEY,
+          'x-api-key': key,
           'anthropic-version': '2023-06-01',
         },
       }

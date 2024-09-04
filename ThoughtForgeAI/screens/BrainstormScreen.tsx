@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList, Platform } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList, Platform, ActivityIndicator, Dimensions } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { sendToWhisper } from '../services/whisperService';
+import { sendToWhisper, generateTTS } from '../services/openAIService';
 import { getChatResponse } from '../services/claudeService';
 import { updateConversationJson } from '../services/conversationService';
 import { generateAudioFileName, getSavedFileRootDirectory } from '../utils/utils';
 import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Sound from 'react-native-sound';
+import Slider from '@react-native-community/slider';
 
 interface Message {
   id: string;
@@ -16,15 +18,31 @@ interface Message {
   fileName: string;
 }
 
+interface AudioState {
+  isPlaying: boolean;
+  duration: number;
+  progress: number;
+}
+
 const audioRecorderPlayer = new AudioRecorderPlayer();
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BrainstormScreen: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const messageIndexRef = useRef<number>(0);
   const [conversationPrefix, setConversationPrefix] = useState<string>('');
-
   const flatListRef = useRef<FlatList>(null);
+  const [currentAudio, setCurrentAudio] = useState<Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
+  const [audioStates, setAudioStates] = useState<{ [key: string]: AudioState }>({});
+  const audioRefs = useRef<{ [key: string]: Sound | null }>({});
+  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+
 
   useEffect(() => {
     checkAndRequestPermission();
@@ -35,6 +53,15 @@ const BrainstormScreen: React.FC = () => {
       scrollToBottom();
     }
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+      Object.values(audioRefs.current).forEach(sound => {
+        sound?.release();
+      });
+    };
+  }, []);
 
   const scrollToBottom = () => {
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -49,9 +76,6 @@ const BrainstormScreen: React.FC = () => {
 
     const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
     const directory = `${getSavedFileRootDirectory()}/_conversations/${prefix}`;
-
-    console.log('--generateFileName--Creating file:', fileName);
-    console.log('--generateFileName--Directory:', directory);
 
     RNFS.mkdir(directory, { NSURLIsExcludedFromBackupKey: false });
 
@@ -78,7 +102,7 @@ const BrainstormScreen: React.FC = () => {
     if (isRecording) {
       const result = await audioRecorderPlayer.stopRecorder();
       setIsRecording(false);
-      console.log('Stopped recording, file path: ', result);
+
       const transcription = await sendToWhisper(result);
       if (transcription) {
         const newFileName = generateFileName('user');
@@ -122,7 +146,6 @@ const BrainstormScreen: React.FC = () => {
       const fileName = generateFileName('user');
       const result = await audioRecorderPlayer.startRecorder(fileName);
       setIsRecording(true);
-      console.log('Started recording, file path: ', result);
     }
   };
 
@@ -139,11 +162,143 @@ const BrainstormScreen: React.FC = () => {
     await updateConversationJson(conversationPrefix, newMessages);
   }, [conversationPrefix]);
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.aiBubble]}>
-      <Text style={styles.messageText}>{item.content}</Text>
-    </View>
-  );
+
+  const stopCurrentAudio = () => {
+    if (currentPlayingId && audioRefs.current[currentPlayingId]) {
+      audioRefs.current[currentPlayingId]?.stop();
+      setAudioStates(prev => ({
+        ...prev,
+        [currentPlayingId]: { ...prev[currentPlayingId], isPlaying: false, progress: 0 }
+      }));
+      setCurrentPlayingId(null);
+    }
+  };
+
+  const playAudio = async (message: Message) => {
+    const messageId = message.id;
+    
+    // Stop the currently playing audio if any
+    stopCurrentAudio();
+
+    if (audioRefs.current[messageId]) {
+      audioRefs.current[messageId]?.release();
+    }
+
+    let audioFile = message.fileName;
+    const fileExists = await RNFS.exists(audioFile);
+
+    if (!fileExists || !audioFile.endsWith('.mp4')) {
+      setIsLoading(prev => ({ ...prev, [messageId]: true }));
+      try {
+        const ttsResult = await generateTTS(message.content);
+        audioFile = `${getSavedFileRootDirectory()}/_conversations/${conversationPrefix}/${conversationPrefix}-${messageIndexRef.current}-${message.role}.mp4`;
+        await RNFS.writeFile(audioFile, ttsResult, 'base64');
+        const updatedMessages = messages.map(msg => 
+          msg.id === messageId ? { ...msg, fileName: audioFile } : msg
+        );
+        updateConversation(updatedMessages);
+      } catch (error) {
+        console.error('Failed to generate TTS:', error);
+        setIsLoading(prev => ({ ...prev, [messageId]: false }));
+        return;
+      }
+    }
+
+    const sound = new Sound(audioFile, '', (error) => {
+      if (error) {
+        console.log('Failed to load the sound', error);
+        setIsLoading(prev => ({ ...prev, [messageId]: false }));
+        return;
+      }
+
+      setAudioStates(prev => ({
+        ...prev,
+        [messageId]: { isPlaying: true, duration: sound.getDuration(), progress: 0 }
+      }));
+      setIsLoading(prev => ({ ...prev, [messageId]: false }));
+      setCurrentPlayingId(messageId);
+
+      sound.play((success) => {
+        if (success) {
+          console.log('Successfully finished playing');
+        } else {
+          console.log('Playback failed due to audio decoding errors');
+        }
+        setAudioStates(prev => ({
+          ...prev,
+          [messageId]: { ...prev[messageId], isPlaying: false, progress: 0 }
+        }));
+        setCurrentPlayingId(null);
+      });
+
+      const interval = setInterval(() => {
+        sound.getCurrentTime((seconds) => {
+          setAudioStates(prev => ({
+            ...prev,
+            [messageId]: { ...prev[messageId], progress: seconds }
+          }));
+        });
+      }, 100);
+
+      audioRefs.current[messageId] = sound;
+
+      return () => clearInterval(interval);
+    });
+  };
+
+  const stopAudio = (messageId: string) => {
+    if (audioRefs.current[messageId]) {
+      audioRefs.current[messageId]?.stop();
+      setAudioStates(prev => ({
+        ...prev,
+        [messageId]: { ...prev[messageId], isPlaying: false, progress: 0 }
+      }));
+      setCurrentPlayingId(null);
+    }
+  };
+
+  const onSliderValueChange = (value: number, messageId: string) => {
+    if (audioRefs.current[messageId]) {
+      audioRefs.current[messageId]?.setCurrentTime(value);
+      setAudioStates(prev => ({
+        ...prev,
+        [messageId]: { ...prev[messageId], progress: value }
+      }));
+    }
+  };
+
+  const renderMessage = ({ item }: { item: Message }) => {
+    const audioState = audioStates[item.id] || { isPlaying: false, duration: 0, progress: 0 };
+    return (
+      <View style={[
+        styles.messageBubble, 
+        item.role === 'user' ? styles.userBubble : styles.aiBubble,
+        styles.minBubbleSize
+      ]}>
+        <Text style={styles.messageText}>{item.content}</Text>
+        <View style={styles.audioControls}>
+          {isLoading[item.id] ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <TouchableOpacity onPress={() => audioState.isPlaying ? stopAudio(item.id) : playAudio(item)}>
+              <Icon name={audioState.isPlaying ? "stop" : "play"} size={24} color="white" />
+            </TouchableOpacity>
+          )}
+          {(item.fileName.endsWith('.mp4') || audioState.isPlaying) && (
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={audioState.duration}
+              value={audioState.progress}
+              onValueChange={(value) => onSliderValueChange(value, item.id)}
+              minimumTrackTintColor="#FFFFFF"
+              maximumTrackTintColor="#000000"
+            />
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -217,6 +372,7 @@ const styles = StyleSheet.create({
   messageText: {
     color: 'white',
     fontSize: 16,
+    marginBottom: 10, // Ajoute un espace entre le texte et les contrôles audio
   },
   button: {
     backgroundColor: '#007AFF',
@@ -232,6 +388,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  audioControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Espace les éléments uniformément
+    marginTop: 5,
+  },
+  slider: {
+    flex: 1,
+    marginLeft: 10,
+    height: 40, // Augmente la hauteur du slider pour une meilleure interaction
+  },
+  minBubbleSize: {
+    minWidth: SCREEN_WIDTH * 0.6, // 60% de la largeur de l'écran
+    minHeight: 80, // Hauteur minimale en pixels
   },
 });
 
