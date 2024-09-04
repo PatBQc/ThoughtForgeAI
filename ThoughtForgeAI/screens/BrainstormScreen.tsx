@@ -5,7 +5,7 @@ import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { sendToWhisper } from '../services/whisperService';
 import { getChatResponse } from '../services/claudeService';
 import { updateConversationJson } from '../services/conversationService';
-import { generateAudioFileName } from '../utils/utils';
+import { generateAudioFileName, getSavedFileRootDirectory } from '../utils/utils';
 import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -48,9 +48,10 @@ const BrainstormScreen: React.FC = () => {
     }
 
     const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
-    const directory = Platform.OS === 'ios'
-      ? `${RNFS.DocumentDirectoryPath}/${prefix}`
-      : `${RNFS.ExternalDirectoryPath}/${prefix}`;
+    const directory = `${getSavedFileRootDirectory()}/_conversations/${prefix}`;
+
+    console.log('--generateFileName--Creating file:', fileName);
+    console.log('--generateFileName--Directory:', directory);
 
     RNFS.mkdir(directory, { NSURLIsExcludedFromBackupKey: false });
 

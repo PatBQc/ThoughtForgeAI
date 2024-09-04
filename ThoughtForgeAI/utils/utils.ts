@@ -1,3 +1,7 @@
+import { Platform } from 'react-native';
+import RNFS from 'react-native-fs';
+
+
 export const generateAudioFileName = (): string => {
     const now = new Date();
     const year = now.getFullYear();
@@ -10,4 +14,9 @@ export const generateAudioFileName = (): string => {
     return `ThoughtForgeAI-${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
   };
 
+  export const getSavedFileRootDirectory = ():string => {
+    return Platform.OS === 'ios'
+      ? `${RNFS.DocumentDirectoryPath}`
+      : `${RNFS.ExternalDirectoryPath}`;
+  };
 

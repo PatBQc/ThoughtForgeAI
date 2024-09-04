@@ -1,7 +1,7 @@
 // services/conversationService.ts
 
 import RNFS from 'react-native-fs';
-import { Platform } from 'react-native';
+import { getSavedFileRootDirectory } from '../utils/utils';
 
 interface ConversationData {
   id: string;
@@ -16,9 +16,7 @@ interface ConversationData {
 }
 
 const getConversationDirectory = () => {
-  return Platform.OS === 'ios'
-    ? `${RNFS.DocumentDirectoryPath}`
-    : `${RNFS.ExternalDirectoryPath}`;
+  return `${getSavedFileRootDirectory()}/_conversations`;
 };
 
 export const updateConversationJson = async (conversationId: string, messages: any[]) => {
@@ -77,16 +75,15 @@ export const loadConversations = async (): Promise<ConversationData[]> => {
 
     return conversationsData;
   } catch (error) {
-    console.error('Error loading conversations:', error);
+    // console.error('Error loading conversations:', error);
+    // Nothing, just assume no conversations exist
     return [];
   }
 };
 
 export const getConversationFiles = async (conversationId: string): Promise<string[]> => {
   try {
-    const directory = Platform.OS === 'ios'
-    ? `${RNFS.DocumentDirectoryPath}/${conversationId}`
-    : `${RNFS.ExternalDirectoryPath}/${conversationId}`;
+    const directory = `${getConversationDirectory()}/${conversationId}`;
 
     const allFiles = await RNFS.readDir(directory);
     return allFiles
