@@ -35,7 +35,7 @@ const ConversationFilesScreen: React.FC = () => {
           return {
             ...conv,
             files,
-            messages: content ? content.messages : []
+            messages: content ? content.messages : [],
           };
         })
       );
@@ -67,8 +67,8 @@ const ConversationFilesScreen: React.FC = () => {
     const isAudio = fileName.endsWith('.mp4');
     const icon = isAudio ? 'musical-notes' : 'document-text';
     return (
-      <TouchableOpacity 
-        key={fileName} 
+      <TouchableOpacity
+        key={fileName}
         style={styles.fileItem}
         onPress={() => handleFilePress(fileName, conversation)}
       >
@@ -83,9 +83,9 @@ const ConversationFilesScreen: React.FC = () => {
       <TouchableOpacity onPress={() => toggleConversationExpansion(item.id)}>
         <View style={styles.conversationHeader}>
           <Text style={styles.conversationTitle}>Conversation: {item.id}</Text>
-          <Icon 
-            name={expandedConversation === item.id ? 'chevron-up-outline' : 'chevron-down-outline'} 
-            size={24} 
+          <Icon
+            name={expandedConversation === item.id ? 'chevron-up-outline' : 'chevron-down-outline'}
+            size={24}
             color="#007AFF"
           />
         </View>
@@ -114,7 +114,7 @@ const ConversationFilesScreen: React.FC = () => {
         transparent={true}
         animationType="slide"
       >
-        <AudioPlayer 
+        <AudioPlayer
           audioFile={selectedAudio!}
           onClose={() => setSelectedAudio(null)}
         />
@@ -123,7 +123,7 @@ const ConversationFilesScreen: React.FC = () => {
         visible={!!selectedConversation}
         animationType="slide"
       >
-        <ConversationView 
+        <ConversationView
           conversation={selectedConversation!}
           onClose={() => setSelectedConversation(null)}
         />
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

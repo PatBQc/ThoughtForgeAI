@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, FlatList, Platform } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { sendToWhisper } from '../services/whisperService';
@@ -20,7 +20,6 @@ const audioRecorderPlayer = new AudioRecorderPlayer();
 
 const BrainstormScreen: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [recordedFilePath, setRecordedFilePath] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const messageIndexRef = useRef<number>(0);
   const [conversationPrefix, setConversationPrefix] = useState<string>('');
@@ -47,9 +46,9 @@ const BrainstormScreen: React.FC = () => {
       prefix = generateAudioFileName();
       setConversationPrefix(prefix);
     }
-  
+
     const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
-    const directory = Platform.OS === 'ios' 
+    const directory = Platform.OS === 'ios'
       ? `${RNFS.DocumentDirectoryPath}/${prefix}`
       : `${RNFS.ExternalDirectoryPath}/${prefix}`;
 
@@ -64,7 +63,7 @@ const BrainstormScreen: React.FC = () => {
       const newPrefix = generateAudioFileName();
       setConversationPrefix(newPrefix);
     }
-  }, [messageIndexRef.current, conversationPrefix]);
+  }, [conversationPrefix]);
 
   const checkAndRequestPermission = async () => {
     const permission = Platform.OS === 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO;
@@ -77,43 +76,42 @@ const BrainstormScreen: React.FC = () => {
   const toggleRecording = async () => {
     if (isRecording) {
       const result = await audioRecorderPlayer.stopRecorder();
-      setRecordedFilePath(result);
       setIsRecording(false);
       console.log('Stopped recording, file path: ', result);
       const transcription = await sendToWhisper(result);
       if (transcription) {
         const newFileName = generateFileName('user');
-        const newUserMessage: Message = { 
-          id: Date.now().toString(), 
-          role: 'user', 
+        const newUserMessage: Message = {
+          id: Date.now().toString(),
+          role: 'user',
           content: transcription,
-          fileName: newFileName
+          fileName: newFileName,
         };
         updateConversation([...messages, newUserMessage]);
         messageIndexRef.current += 1;
-  
+
         try {
           const claudeMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
           claudeMessages.push({ role: 'user', content: transcription });
-  
+
           const newAssistantFileName = generateFileName('assistant');
           const claudeResponse = await getChatResponse(claudeMessages, newAssistantFileName);
-          const newAssistantMessage: Message = { 
-            id: (Date.now() + 1).toString(), 
-            role: 'assistant', 
+          const newAssistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
             content: claudeResponse,
-            fileName: newAssistantFileName
+            fileName: newAssistantFileName,
           };
           updateConversation([...messages, newUserMessage, newAssistantMessage]);
           messageIndexRef.current += 1;
         } catch (error) {
           console.error('Error getting response from Claude:', error);
           const errorFileName = generateFileName('assistant');
-          const errorMessage: Message = { 
-            id: (Date.now() + 1).toString(), 
-            role: 'assistant', 
+          const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
             content: "Désolé, je n'ai pas pu obtenir une réponse. Veuillez réessayer.",
-            fileName: errorFileName
+            fileName: errorFileName,
           };
           updateConversation([...messages, newUserMessage, errorMessage]);
           messageIndexRef.current += 1;

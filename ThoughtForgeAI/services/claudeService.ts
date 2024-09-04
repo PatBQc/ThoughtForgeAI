@@ -17,7 +17,7 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
     const systemPrompt = storedSystemPrompt || DEFAULT_SYSTEM_PROMPT;
 
     const allMessages: Message[] = [
-      ...messages
+      ...messages,
     ];
 
     const response = await axios.post(

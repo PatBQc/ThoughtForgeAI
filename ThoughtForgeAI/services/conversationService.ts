@@ -16,7 +16,7 @@ interface ConversationData {
 }
 
 const getConversationDirectory = () => {
-  return Platform.OS === 'ios' 
+  return Platform.OS === 'ios'
     ? `${RNFS.DocumentDirectoryPath}`
     : `${RNFS.ExternalDirectoryPath}`;
 };
@@ -42,7 +42,7 @@ export const updateConversationJson = async (conversationId: string, messages: a
       conversationData = {
         id: conversationId,
         startTime: new Date().toISOString(),
-        messages: []
+        messages: [],
       };
     }
 
@@ -52,7 +52,7 @@ export const updateConversationJson = async (conversationId: string, messages: a
       content: msg.content,
       timestamp: msg.timestamp || new Date().toISOString(),
       audioFile: msg.audioFile,
-      transcriptionFile: msg.transcriptionFile
+      transcriptionFile: msg.transcriptionFile,
     }));
 
     // Write the updated data back to the file
@@ -84,10 +84,10 @@ export const loadConversations = async (): Promise<ConversationData[]> => {
 
 export const getConversationFiles = async (conversationId: string): Promise<string[]> => {
   try {
-    const directory = Platform.OS === 'ios' 
+    const directory = Platform.OS === 'ios'
     ? `${RNFS.DocumentDirectoryPath}/${conversationId}`
     : `${RNFS.ExternalDirectoryPath}/${conversationId}`;
-    
+
     const allFiles = await RNFS.readDir(directory);
     return allFiles
       .filter(f => f.name.startsWith(conversationId))

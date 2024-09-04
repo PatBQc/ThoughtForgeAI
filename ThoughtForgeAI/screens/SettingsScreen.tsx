@@ -20,16 +20,16 @@ const SettingsScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>API Key:</Text>
-        <TextInput 
-          style={styles.input} 
+        <TextInput
+          style={styles.input}
           placeholder="Enter your API key"
           secureTextEntry
         />
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>System Prompt:</Text>
-        <TextInput 
-          style={styles.input} 
+        <TextInput
+          style={styles.input}
           multiline
           numberOfLines={10}
           value={systemPrompt}
