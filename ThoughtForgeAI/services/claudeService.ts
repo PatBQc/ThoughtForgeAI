@@ -21,7 +21,6 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
     ];
 
     const key = await apiKeyService.ANTHROPIC_API_KEY();
-    console.log('--getChatResponse--Anthropic API key:', key);
 
     const response = await axios.post(
       CLAUDE_API_URL,
@@ -45,7 +44,6 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
     // Save Claude's response to a .txt file
     const txtFilePath = fileName.replace('.mp4', '.txt');
     await RNFS.writeFile(txtFilePath, claudeResponse, 'utf8');
-    console.log('Claude response saved to:', txtFilePath);
 
     return claudeResponse;
   } catch (error) {
