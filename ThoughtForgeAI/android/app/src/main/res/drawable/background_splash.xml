@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white"/>
-    <item>
+    <item android:drawable="@color/splash_background"/>
+    <!-- Even if <item\background> specified, it's not loaded so let's skip this part for the moment -->
+    <!-- <item>
         <bitmap
             android:gravity="center"
             android:src="@drawable/splash_logo"/>
-    </item>
+    </item> -->
 </layer-list>
