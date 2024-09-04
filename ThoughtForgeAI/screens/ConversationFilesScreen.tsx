@@ -1,10 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadConversations, getConversationFiles, readConversationContent } from '../services/conversationService';
 import Icon from 'react-native-vector-icons/Ionicons';
-import AudioPlayer from '../components/AudioPlayer'; // Nous allons créer ce composant
-import ConversationView from '../components/ConversationView'; // Nous allons créer ce composant
+import MessageBubble from '../components/MessageBubble';
 
 interface Conversation {
   id: string;
@@ -14,6 +13,7 @@ interface Conversation {
 }
 
 interface Message {
+  id: string;
   role: 'user' | 'assistant';
   content: string;
   fileName: string;
@@ -22,8 +22,7 @@ interface Message {
 const ConversationFilesScreen: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedConversation, setExpandedConversation] = useState<string | null>(null);
-  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
 
   const loadAllConversations = useCallback(async () => {
     try {
@@ -53,30 +52,25 @@ const ConversationFilesScreen: React.FC = () => {
 
   const toggleConversationExpansion = (conversationId: string) => {
     setExpandedConversation(prevId => prevId === conversationId ? null : conversationId);
-  };
-
-  const handleFilePress = (fileName: string, conversation: Conversation) => {
-    if (fileName.endsWith('.mp4')) {
-      setSelectedAudio(fileName);
-    } else {
-      setSelectedConversation(conversation);
+    // Reset currentPlayingId when closing a conversation
+    if (expandedConversation === conversationId) {
+      setCurrentPlayingId(null);
     }
   };
 
-  const renderFile = (fileName: string, conversation: Conversation) => {
-    const isAudio = fileName.endsWith('.mp4');
-    const icon = isAudio ? 'musical-notes' : 'document-text';
-    return (
-      <TouchableOpacity
-        key={fileName}
-        style={styles.fileItem}
-        onPress={() => handleFilePress(fileName, conversation)}
-      >
-        <Icon name={icon} size={24} color="#007AFF" />
-        <Text style={styles.fileName}>{fileName}</Text>
-      </TouchableOpacity>
-    );
+  const handleAudioPlay = (messageId: string) => {
+    setCurrentPlayingId(prevId => prevId === messageId ? null : messageId);
   };
+
+  const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => (
+    <MessageBubble
+      key={`${conversationId}-${item.id}-${index}`}
+      message={item}
+      conversationPrefix={conversationId}
+      onAudioPlay={handleAudioPlay}
+      isCurrentlyPlaying={currentPlayingId === item.id}
+    />
+  );
 
   const renderConversation = ({ item }: { item: Conversation }) => (
     <View style={styles.conversationContainer}>
@@ -92,10 +86,12 @@ const ConversationFilesScreen: React.FC = () => {
         <Text style={styles.conversationDate}>Started: {new Date(item.startTime).toLocaleString()}</Text>
       </TouchableOpacity>
       {expandedConversation === item.id && (
-        <View style={styles.fileList}>
-          <Text style={styles.fileListTitle}>Files:</Text>
-          {item.files.map(file => renderFile(file, item))}
-        </View>
+        <FlatList
+          data={item.messages}
+          renderItem={({ item: message, index }) => renderMessage({ item: message, index }, item.id)}
+          keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
+          style={styles.messageList}
+        />
       )}
     </View>
   );
@@ -109,25 +105,6 @@ const ConversationFilesScreen: React.FC = () => {
         refreshing={false}
         onRefresh={loadAllConversations}
       />
-      <Modal
-        visible={!!selectedAudio}
-        transparent={true}
-        animationType="slide"
-      >
-        <AudioPlayer
-          audioFile={selectedAudio!}
-          onClose={() => setSelectedAudio(null)}
-        />
-      </Modal>
-      <Modal
-        visible={!!selectedConversation}
-        animationType="slide"
-      >
-        <ConversationView
-          conversation={selectedConversation!}
-          onClose={() => setSelectedConversation(null)}
-        />
-      </Modal>
     </View>
   );
 };
@@ -183,6 +160,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     color: '#333',
+  },
+  messageList: {
+    marginTop: 10,
   },
 });
 

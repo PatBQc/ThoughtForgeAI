@@ -5,7 +5,6 @@ import Slider from '@react-native-community/slider';
 import Sound from 'react-native-sound';
 import RNFS from 'react-native-fs';
 import { generateTTS } from '../services/openAIService';
-import { getSavedFileRootDirectory } from '../utils/utils';
 
 interface Message {
   id: string;
@@ -34,7 +33,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const [progress, setProgress] = useState(0);
     const soundRef = useRef<Sound | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
     useEffect(() => {
       return () => {
         if (soundRef.current) {
@@ -46,7 +45,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
       };
     }, []);
-  
+
     useEffect(() => {
       if (!isCurrentlyPlaying && soundRef.current) {
         soundRef.current.stop();
@@ -56,7 +55,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
       }
     }, [isCurrentlyPlaying]);
-  
+
     const playAudio = useCallback(async () => {
       if (isCurrentlyPlaying) {
         if (soundRef.current) {
@@ -65,11 +64,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         onAudioPlay('');
         return;
       }
-  
+
       let audioFile = message.fileName;
       console.log('--playaudio-- Audio file avant TTS:', audioFile);
       const fileExists = await RNFS.exists(audioFile);
-  
+
       if (!fileExists || (message.role === 'assistant' && !audioFile.endsWith('.mp4'))) {
         setIsLoading(true);
         try {
@@ -84,7 +83,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           return;
         }
       }
-  
+
       setIsLoading(true);
       const newSound = new Sound(audioFile, '', (error) => {
         setIsLoading(false);
@@ -92,10 +91,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           console.log('Failed to load the sound', error);
           return;
         }
-  
+
         setDuration(newSound.getDuration());
         soundRef.current = newSound;
-  
+
         newSound.play((success) => {
           if (success) {
             console.log('Successfully finished playing');
@@ -108,22 +107,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             clearInterval(intervalRef.current);
           }
         });
-  
+
         onAudioPlay(message.id);
-  
+
         intervalRef.current = setInterval(() => {
           newSound.getCurrentTime((seconds) => setProgress(seconds));
         }, 100);
       });
-    }, [message, conversationPrefix, onAudioPlay, isCurrentlyPlaying]);
-  
+    }, [message, onAudioPlay, isCurrentlyPlaying]);
+
     const onSliderValueChange = useCallback((value: number) => {
       if (soundRef.current) {
         soundRef.current.setCurrentTime(value);
         setProgress(value);
       }
     }, []);
-  
+
     return (
       <View style={[
         styles.messageBubble,

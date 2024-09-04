@@ -10,8 +10,7 @@ interface ConversationData {
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
-    audioFile?: string;
-    transcriptionFile?: string;
+    fileName: string;
   }>;
 }
 
@@ -49,8 +48,7 @@ export const updateConversationJson = async (conversationId: string, messages: a
       role: msg.role,
       content: msg.content,
       timestamp: msg.timestamp || new Date().toISOString(),
-      audioFile: msg.audioFile,
-      transcriptionFile: msg.transcriptionFile,
+      fileName: msg.fileName,
     }));
 
     // Write the updated data back to the file
