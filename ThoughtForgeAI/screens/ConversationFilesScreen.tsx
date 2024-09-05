@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { loadConversations, getConversationFiles, readConversationContent } from '../services/conversationService';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MessageBubble from '../components/MessageBubble';
+import { useTheme } from '../theme/themeContext';
 
 interface Conversation {
   id: string;
@@ -24,6 +25,8 @@ const ConversationFilesScreen: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedConversation, setExpandedConversation] = useState<string | null>(null);
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+
+  const { theme } = useTheme();
 
   const loadAllConversations = useCallback(async () => {
     try {
@@ -65,26 +68,30 @@ const ConversationFilesScreen: React.FC = () => {
 
   const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => (
     <MessageBubble
-    key={`${conversationId}-${item.id}-${index}`}
-    message={item}
-    conversationPrefix={conversationId}
-    onAudioPlay={handleAudioPlay}
-    isCurrentlyPlaying={currentPlayingId === item.id}
-  />
+      key={`${conversationId}-${item.id}-${index}`}
+      message={item}
+      conversationPrefix={conversationId}
+      onAudioPlay={handleAudioPlay}
+      isCurrentlyPlaying={currentPlayingId === item.id}
+    />
   );
 
   const renderConversation = ({ item }: { item: Conversation }) => (
-    <View style={styles.conversationContainer}>
+    <View style={[styles.conversationContainer, { backgroundColor: theme.background }]}>
       <TouchableOpacity onPress={() => toggleConversationExpansion(item.id)}>
         <View style={styles.conversationHeader}>
-          <Text style={styles.conversationTitle}>{item.subject?.trim() ?? item.id}</Text>
+          <Text style={[styles.conversationTitle, { color: theme.primary }]}>
+            {item.subject?.trim() ?? item.id}
+          </Text>
           <Icon
             name={expandedConversation === item.id ? 'chevron-up-outline' : 'chevron-down-outline'}
             size={24}
-            color="#007AFF"
+            color={theme.primary}
           />
         </View>
-        <Text style={styles.conversationDate}>Started: {new Date(item.startTime).toLocaleString()}</Text>
+        <Text style={[styles.conversationDate, { color: theme.text }]}>
+          Started: {new Date(item.startTime).toLocaleString()}
+        </Text>
       </TouchableOpacity>
       {expandedConversation === item.id && (
         <FlatList
@@ -98,7 +105,7 @@ const ConversationFilesScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <FlatList
         data={conversations}
         renderItem={renderConversation}
@@ -113,12 +120,10 @@ const ConversationFilesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0',
   },
   conversationContainer: {
     marginBottom: 10,
     padding: 15,
-    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -137,11 +142,9 @@ const styles = StyleSheet.create({
   conversationTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#007AFF',
   },
   conversationDate: {
     fontSize: 14,
-    color: '#666',
     marginTop: 5,
   },
   fileList: {
@@ -160,7 +163,6 @@ const styles = StyleSheet.create({
   fileName: {
     marginLeft: 10,
     fontSize: 14,
-    color: '#333',
   },
   messageList: {
     marginTop: 10,

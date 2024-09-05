@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Switch,
   View,
   Button,
   KeyboardAvoidingView,
@@ -17,6 +18,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 import { apiKeyService } from '../services/apiKeyService';
 import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from '@env';
+import { useTheme } from '../theme/themeContext';
+
 
 const SettingsScreen: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
@@ -25,6 +28,8 @@ const SettingsScreen: React.FC = () => {
   const [openAIFocused, setOpenAIFocused] = useState(false);
   const [anthropicFocused, setAnthropicFocused] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  const { theme, isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const loadApiKeys = async () => {
@@ -73,7 +78,7 @@ const SettingsScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -85,11 +90,12 @@ const SettingsScreen: React.FC = () => {
         >
           <SafeAreaView>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>OpenAI API Key</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>OpenAI API Key</Text>
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme.text, borderColor: theme.text }]}
                   placeholder="Enter your OpenAI API key"
+                  placeholderTextColor={theme.secondary}
                   secureTextEntry={!openAIFocused}
                   value={openAIKey}
                   onChangeText={setOpenAIKey}
@@ -97,15 +103,20 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setOpenAIFocused(false)}
                 />
               </View>
-              <Button title="Save OpenAI Key" onPress={() => saveApiKey('OPENAI_API_KEY', openAIKey)} />
+              <Button 
+                title="Save OpenAI Key" 
+                onPress={() => saveApiKey('OPENAI_API_KEY', openAIKey)}
+                color={theme.primary}
+              />
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Anthropic API Key</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Anthropic API Key</Text>
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme.text, borderColor: theme.text }]}
                   placeholder="Enter your Anthropic API key"
+                  placeholderTextColor={theme.secondary}
                   secureTextEntry={!anthropicFocused}
                   value={anthropicKey}
                   onChangeText={setAnthropicKey}
@@ -113,22 +124,42 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setAnthropicFocused(false)}
                 />
               </View>
-              <Button title="Save Anthropic Key" onPress={() => saveApiKey('ANTHROPIC_API_KEY', anthropicKey)} />
+              <Button 
+                title="Save Anthropic Key" 
+                onPress={() => saveApiKey('ANTHROPIC_API_KEY', anthropicKey)}
+                color={theme.primary}
+              />
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>System Prompt</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>System Prompt</Text>
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={[styles.input, styles.multilineInput]}
+                  style={[styles.input, styles.multilineInput, { color: theme.text, borderColor: theme.text }]}
                   multiline
                   numberOfLines={10}
                   value={systemPrompt}
                   onChangeText={setSystemPrompt}
+                  placeholderTextColor={theme.secondary}
                 />
               </View>
-              <Button title="Save System Prompt" onPress={saveSystemPrompt} />
+              <Button 
+                title="Save System Prompt" 
+                onPress={saveSystemPrompt}
+                color={theme.primary}
+              />
             </View>
+
+            <View style={styles.section}>
+              <Text style={[styles.text, { color: theme.text }]}>Dark Mode</Text>
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                trackColor={{ false: "#767577", true: theme.primary }}
+                thumbColor={isDark ? theme.accent : "#f4f3f4"}
+              />
+            </View>
+
           </SafeAreaView>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -157,13 +188,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 5,
     padding: 10,
   },
   multilineInput: {
     height: 150,
     textAlignVertical: 'top',
+  },
+  text: {
+    fontSize: 18,
+    marginBottom: 10,
   },
 });
 

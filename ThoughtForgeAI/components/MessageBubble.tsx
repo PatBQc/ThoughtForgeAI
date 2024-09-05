@@ -5,6 +5,7 @@ import Slider from '@react-native-community/slider';
 import Sound from 'react-native-sound';
 import RNFS from 'react-native-fs';
 import { generateTTS } from '../services/openAIService';
+import { useTheme } from '../theme/themeContext';
 
 interface Message {
   id: string;
@@ -33,6 +34,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const [progress, setProgress] = useState(0);
     const soundRef = useRef<Sound | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const { theme } = useTheme();
 
     useEffect(() => {
       return () => {
@@ -66,7 +69,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
 
       let fileName = message.fileName;
-      console.log('--playaudio-- fileName before TTS:', fileName);
       let audioFile = message.fileName;
       if(fileName.endsWith('.txt')) {
         audioFile = fileName.replace('.txt', '.mp4');
@@ -78,7 +80,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         setIsLoading(true);
         try {
           const ttsResult = await generateTTS(message.content);
-          console.log('--playaudio-- Audio file après TTS:', audioFile);
           await RNFS.writeFile(audioFile, ttsResult, 'base64');
           message.fileName = audioFile;
         } catch (error) {
@@ -92,7 +93,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       const newSound = new Sound(audioFile, '', (error) => {
         setIsLoading(false);
         if (error) {
-          console.log('Failed to load the sound', error);
+          console.error('Failed to load the sound', error);
           return;
         }
 
@@ -130,7 +131,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     return (
       <View style={[
         styles.messageBubble,
-        message.role === 'user' ? styles.userBubble : styles.aiBubble,
+        message.role === 'user' 
+          ? [styles.userBubble, { backgroundColor: theme.messageBubbleUser }] 
+          : [styles.aiBubble, { backgroundColor: theme.messageBubbleAssistant }],
         styles.minBubbleSize,
       ]}>
         <Text style={styles.messageText}>{message.content}</Text>
@@ -142,7 +145,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               <Icon name={isCurrentlyPlaying ? 'stop' : 'play'} size={24} color="white" />
             </TouchableOpacity>
           )}
-          { (
+          {(
             <Slider
               style={styles.slider}
               minimumValue={0}
@@ -158,7 +161,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     );
   };
 
-
 const styles = StyleSheet.create({
   messageBubble: {
     maxWidth: '80%',
@@ -172,11 +174,9 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
   },
   aiBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#34C759',
   },
   messageText: {
     color: 'white',

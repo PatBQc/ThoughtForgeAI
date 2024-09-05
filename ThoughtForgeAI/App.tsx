@@ -7,36 +7,55 @@ import BrainstormScreen from './screens/BrainstormScreen';
 import ConversationFilesScreen from './screens/ConversationFilesScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import TabIcon from './TabIcon';
+import { ThemeProvider, useTheme } from './theme/themeContext';
 
 const Tab = createBottomTabNavigator();
 
-const App: React.FC = () => {
-  
+const AppContent: React.FC = () => {
+  const { theme } = useTheme();
+
   useEffect(() => {
     SplashScreen.hide();
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused, color, size }) => (
-              <TabIcon
-                focused={focused}
-                color={color}
-                size={size}
-                routeName={route.name}
-              />
-            ),
-          })}
-        >
-          <Tab.Screen name="Brainstorm" component={BrainstormScreen} />
-          <Tab.Screen name="Conversations" component={ConversationFilesScreen} />
-          <Tab.Screen name="Settings" component={SettingsScreen} />
-        </Tab.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabIcon
+              focused={focused}
+              color={color}
+              size={size}
+              routeName={route.name}
+            />
+          ),
+          tabBarStyle: {
+            backgroundColor: theme.background,
+          },
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.text,
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+        })}
+      >
+        <Tab.Screen name="Brainstorm" component={BrainstormScreen} />
+        <Tab.Screen name="Conversations" component={ConversationFilesScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <AppContent />
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 };
 

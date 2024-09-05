@@ -11,6 +11,7 @@ import { generateAudioFileName, getSavedFileRootDirectory } from '../utils/utils
 import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MessageBubble from '../components/MessageBubble';
+import { useTheme } from '../theme/themeContext';
 
 interface Message {
   id: string;
@@ -29,6 +30,8 @@ const BrainstormScreen: React.FC = () => {
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
+  
+  const { theme } = useTheme();
 
   useEffect(() => {
     checkAndRequestPermission();
@@ -153,11 +156,11 @@ const BrainstormScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.secondary }]}>
         <TouchableOpacity onPress={startNewConversation} style={styles.newConversationButton}>
-          <Icon name="refresh-outline" size={24} color="#007AFF" />
-          <Text style={styles.newConversationText}>Nouvelle conversation</Text>
+          <Icon name="refresh-outline" size={24} color={theme.primary} />
+          <Text style={[styles.newConversationText, { color: theme.primary }]}>Nouvelle conversation</Text>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -170,10 +173,14 @@ const BrainstormScreen: React.FC = () => {
         onLayout={scrollToBottom}
       />
       <TouchableOpacity
-        style={[styles.button, isRecording && styles.buttonRecording]}
+        style={[
+          styles.button, 
+          { backgroundColor: theme.primary },
+          isRecording && { backgroundColor: theme.accent }
+        ]}
         onPress={toggleRecording}
       >
-        <Text style={styles.buttonText}>
+        <Text style={[styles.buttonText, { color: theme.background }]}>
           {isRecording ? 'Arrêter l\'enregistrement' : 'Commencer l\'enregistrement'}
         </Text>
       </TouchableOpacity>
@@ -184,13 +191,10 @@ const BrainstormScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0',
   },
   header: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
   },
   newConversationButton: {
     flexDirection: 'row',
@@ -200,7 +204,6 @@ const styles = StyleSheet.create({
   },
   newConversationText: {
     marginLeft: 10,
-    color: '#007AFF',
     fontSize: 16,
   },
   messageList: {
@@ -208,20 +211,16 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   button: {
-    backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     margin: 10,
   },
-  buttonRecording: {
-    backgroundColor: '#FF3B30',
-  },
   buttonText: {
-    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
 });
+
 
 export default BrainstormScreen;
