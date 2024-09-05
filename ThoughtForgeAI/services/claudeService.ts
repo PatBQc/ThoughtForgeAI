@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SYSTEM_PROMPT as DEFAULT_SYSTEM_PROMPT } from '../utils/systemPrompt';
+import { SYSTEM_PROMPT as DEFAULT_SYSTEM_PROMPT, SYSTEM_PROMPT_SUBJECT } from '../utils/systemPrompt';
 import { apiKeyService } from '../services/apiKeyService';
 import RNFS from 'react-native-fs';
 
@@ -45,6 +45,42 @@ export const getChatResponse = async (messages: Message[], fileName: string): Pr
     const txtFilePath = fileName.replace('.mp4', '.txt');
     await RNFS.writeFile(txtFilePath, claudeResponse, 'utf8');
 
+    return claudeResponse;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error:', error.response?.data);
+    } else {
+      console.error('Error calling Anthropic Claude API:', error);
+    }
+    throw error;
+  }
+};
+
+
+export const getSubject = async (summary: string): Promise<string> => {
+  try {
+    const systemPrompt = SYSTEM_PROMPT_SUBJECT;
+
+    const key = await apiKeyService.ANTHROPIC_API_KEY();
+
+    const response = await axios.post(
+      CLAUDE_API_URL,
+      {
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: summary }],
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+        },
+      }
+    );
+
+    const claudeResponse = response.data.content[0].text;
     return claudeResponse;
   } catch (error) {
     if (axios.isAxiosError(error)) {

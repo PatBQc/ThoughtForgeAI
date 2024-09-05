@@ -2,10 +2,12 @@
 
 import RNFS from 'react-native-fs';
 import { getSavedFileRootDirectory } from '../utils/utils';
+import { getSubject } from './claudeService'; // Adjust the path as necessary
 
 interface ConversationData {
   id: string;
   startTime: string;
+  subject?: string;
   messages: Array<{
     id: string;
     role: 'user' | 'assistant';
@@ -42,6 +44,20 @@ export const updateConversationJson = async (conversationId: string, messages: a
         startTime: new Date().toISOString(),
         messages: [],
       };
+    }
+
+    // if we received two messages from user, we can now infer the subject
+    if(messages.length >= 3 && !conversationData.subject) {
+      let summary = `
+      # USER
+      ${messages[0].content}, 
+
+      # ASSISTANT
+      ${messages[1].content}
+
+      #USER
+      ${messages[2].content}`;
+      conversationData.subject = await getSubject(summary);
     }
 
     // Update the messages
