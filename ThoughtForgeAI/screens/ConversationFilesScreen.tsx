@@ -74,14 +74,14 @@ const ConversationFilesScreen: React.FC = () => {
       setIsExporting(true);
       // Obtenir ou créer un notebook
       let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
-      
+
       // Obtenir ou créer une section dans le notebook
       let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
-  
+
       // Formater et exporter la conversation
       const htmlContent = formatConversationToHTML(conversation.messages, conversation.subject || 'Brainstorming Session');
       await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
-  
+
       Alert.alert('Success', 'Conversation exported to OneNote successfully!');
     } catch (error) {
       console.error('Error exporting conversation:', error);
@@ -141,8 +141,8 @@ const ConversationFilesScreen: React.FC = () => {
             keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
             style={styles.messageList}
           />
-          <TouchableOpacity 
-            style={[styles.exportButton, { backgroundColor: theme.primary }]} 
+          <TouchableOpacity
+            style={[styles.exportButton, { backgroundColor: theme.primary }]}
             onPress={() => exportConversation(item)}
             disabled={isExporting}
           >
@@ -157,8 +157,8 @@ const ConversationFilesScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <TouchableOpacity 
-        style={[styles.exportAllButton, { backgroundColor: theme.primary }]} 
+      <TouchableOpacity
+        style={[styles.exportAllButton, { backgroundColor: theme.primary }]}
         onPress={exportAllConversations}
         disabled={isExporting}
       >

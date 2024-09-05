@@ -12,11 +12,11 @@ const getAuthenticatedClient = async (): Promise<Client> => {
     }
 
     const authProvider = {
-      getAccessToken: async () => accessToken
+      getAccessToken: async () => accessToken,
     };
 
     graphClient = Client.initWithMiddleware({
-      authProvider: authProvider as AuthCodeMSALBrowserAuthenticationProvider
+      authProvider: authProvider as AuthCodeMSALBrowserAuthenticationProvider,
     });
   }
   return graphClient;
@@ -24,7 +24,7 @@ const getAuthenticatedClient = async (): Promise<Client> => {
 
 export const getOrCreateNotebook = async (name: string): Promise<any> => {
   const client = await getAuthenticatedClient();
-  
+
   // Vérifier si le notebook existe déjà
   const notebooks = await client.api('/me/onenote/notebooks')
     .filter(`displayName eq '${name}'`)
@@ -37,14 +37,14 @@ export const getOrCreateNotebook = async (name: string): Promise<any> => {
 
   // Le notebook n'existe pas, le créer
   const notebook = {
-    displayName: name
+    displayName: name,
   };
   return client.api('/me/onenote/notebooks').post(notebook);
 };
 
 export const getOrCreateSection = async (notebookId: string, name: string): Promise<any> => {
   const client = await getAuthenticatedClient();
-  
+
   // Vérifier si la section existe déjà
   const sections = await client.api(`/me/onenote/notebooks/${notebookId}/sections`)
     .filter(`displayName eq '${name}'`)
@@ -57,7 +57,7 @@ export const getOrCreateSection = async (notebookId: string, name: string): Prom
 
   // La section n'existe pas, la créer
   const section = {
-    displayName: name
+    displayName: name,
   };
   return client.api(`/me/onenote/notebooks/${notebookId}/sections`).post(section);
 };
@@ -98,8 +98,8 @@ export const createPageWithContent = async (sectionId: string, title: string, co
     </html>`;
 
   const body = `--${boundary}\r\n` +
-               `Content-Disposition: form-data; name="Presentation"\r\n` +
-               `Content-Type: text/html\r\n\r\n` +
+               'Content-Disposition: form-data; name="Presentation"\r\n' +
+               'Content-Type: text/html\r\n\r\n' +
                `${htmlContent}\r\n` +
                `--${boundary}--\r\n`;
 
@@ -110,7 +110,7 @@ export const createPageWithContent = async (sectionId: string, title: string, co
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
-      body: body
+      body: body,
     });
 
     if (!response.ok) {

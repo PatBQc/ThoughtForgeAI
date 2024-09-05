@@ -115,7 +115,15 @@ android {
             force 'androidx.versionedparcelable:versionedparcelable:1.1.1'
         }
     }
+
+    tasks.whenTaskAdded { task ->
+        if (task.name.contains("lint") || task.name.contains("Lint")) {
+            task.mustRunAfter 'copyReactNativeVectorIconFonts'
+        }
+    }
 }
+
+
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
