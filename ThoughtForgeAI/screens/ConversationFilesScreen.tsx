@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Progress from 'react-native-progress';
 import { loadConversations, getConversationFiles, readConversationContent } from '../services/conversationService';
 import { getOrCreateNotebook, getOrCreateSection, createPageWithContent } from '../services/oneNoteService';
 import { formatConversationToHTML } from '../utils/formatConversation';
@@ -29,6 +30,7 @@ const ConversationFilesScreen: React.FC = () => {
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportingConversationId, setExportingConversationId] = useState<string | null>(null);
+  const [exportAllProgress, setExportAllProgress] = useState<number | null>(null);
 
   const { theme } = useTheme();
 
@@ -93,16 +95,30 @@ const ConversationFilesScreen: React.FC = () => {
 
   const exportAllConversations = async () => {
     try {
-      setIsExporting(true);
-      for (const conversation of conversations) {
-        await exportConversation(conversation);
+      setExportAllProgress(0);
+      
+      // Obtenir ou créer un notebook
+      let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
+      
+      // Obtenir ou créer une section dans le notebook
+      let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
+
+      for (let i = 0; i < conversations.length; i++) {
+        const conversation = conversations[i];
+        // Formater et exporter la conversation
+        const htmlContent = formatConversationToHTML(conversation.messages, conversation.subject || 'Brainstorming Session');
+        await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
+        
+        // Mettre à jour la progression
+        setExportAllProgress((i + 1) / conversations.length);
       }
+
       Alert.alert('Success', 'All conversations exported to OneNote successfully!');
     } catch (error) {
       console.error('Error exporting all conversations:', error);
       Alert.alert('Error', 'Failed to export all conversations. Some may have been exported.');
     } finally {
-      setIsExporting(false);
+      setExportAllProgress(null);
     }
   };
 
@@ -157,18 +173,39 @@ const ConversationFilesScreen: React.FC = () => {
     </View>
   );
 
+  const renderExportAllButton = () => {
+    if (exportAllProgress !== null) {
+      return (
+        <View style={styles.progressBarContainer}>
+          <Progress.Bar 
+            progress={exportAllProgress} 
+            width={null} 
+            height={40}
+            color={theme.primary}
+            borderWidth={0}
+            borderRadius={5}
+          />
+          <Text style={[styles.progressText, { color: theme.text }]}>
+            {Math.round(exportAllProgress * 100)}%
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity 
+        style={[styles.exportAllButton, { backgroundColor: theme.primary }]} 
+        onPress={exportAllConversations}
+        disabled={exportingConversationId !== null || exportAllProgress !== null}
+      >
+        <Text style={styles.exportButtonText}>Export All to OneNote</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <TouchableOpacity
-        style={[styles.exportAllButton, { backgroundColor: theme.primary }]}
-        onPress={exportAllConversations}
-        disabled={isExporting}
-      >
-        <Text style={styles.exportButtonText}>
-          {isExporting ? 'Exporting...' : 'Export All to OneNote'}
-        </Text>
-      </TouchableOpacity>
+      {renderExportAllButton()}
       <FlatList
         data={conversations}
         renderItem={renderConversation}
@@ -243,9 +280,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     margin: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
   },
   exportButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  progressBarContainer: {
+    margin: 10,
+    height: 40,
+    borderRadius: 5,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  progressText: {
+    position: 'absolute',
+    alignSelf: 'center',
     fontWeight: 'bold',
   },
 });
