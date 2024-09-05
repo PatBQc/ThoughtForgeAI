@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadConversations, getConversationFiles, readConversationContent } from '../services/conversationService';
 import { getOrCreateNotebook, getOrCreateSection, createPageWithContent } from '../services/oneNoteService';
@@ -28,6 +28,7 @@ const ConversationFilesScreen: React.FC = () => {
   const [expandedConversation, setExpandedConversation] = useState<string | null>(null);
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportingConversationId, setExportingConversationId] = useState<string | null>(null);
 
   const { theme } = useTheme();
 
@@ -71,23 +72,22 @@ const ConversationFilesScreen: React.FC = () => {
 
   const exportConversation = async (conversation: Conversation) => {
     try {
-      setIsExporting(true);
+      setExportingConversationId(conversation.id);
+      
       // Obtenir ou créer un notebook
       let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
-
+      
       // Obtenir ou créer une section dans le notebook
       let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
 
       // Formater et exporter la conversation
       const htmlContent = formatConversationToHTML(conversation.messages, conversation.subject || 'Brainstorming Session');
       await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
-
-      Alert.alert('Success', 'Conversation exported to OneNote successfully!');
     } catch (error) {
       console.error('Error exporting conversation:', error);
       Alert.alert('Error', 'Failed to export conversation. Please try again.');
     } finally {
-      setIsExporting(false);
+      setExportingConversationId(null);
     }
   };
 
@@ -141,19 +141,22 @@ const ConversationFilesScreen: React.FC = () => {
             keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
             style={styles.messageList}
           />
-          <TouchableOpacity
-            style={[styles.exportButton, { backgroundColor: theme.primary }]}
+          <TouchableOpacity 
+            style={[styles.exportButton, { backgroundColor: theme.primary }]} 
             onPress={() => exportConversation(item)}
-            disabled={isExporting}
+            disabled={exportingConversationId !== null}
           >
-            <Text style={styles.exportButtonText}>
-              {isExporting ? 'Exporting...' : 'Export to OneNote'}
-            </Text>
+            {exportingConversationId === item.id ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.exportButtonText}>Export to OneNote</Text>
+            )}
           </TouchableOpacity>
         </>
       )}
     </View>
   );
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -232,6 +235,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 40, // Définir une hauteur fixe pour le bouton
   },
   exportAllButton: {
     padding: 10,
