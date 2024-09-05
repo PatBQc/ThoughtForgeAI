@@ -65,18 +65,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         return;
       }
 
+      let fileName = message.fileName;
+      console.log('--playaudio-- fileName before TTS:', fileName);
       let audioFile = message.fileName;
-      console.log('--playaudio-- Audio file avant TTS:', audioFile);
+      if(fileName.endsWith('.txt')) {
+        audioFile = fileName.replace('.txt', '.mp4');
+      }
+
       const fileExists = await RNFS.exists(audioFile);
 
-      if (!fileExists || (message.role === 'assistant' && !audioFile.endsWith('.mp4'))) {
+      if (!fileExists) {
         setIsLoading(true);
         try {
           const ttsResult = await generateTTS(message.content);
-          audioFile = audioFile.replace('.txt', '.mp4');
-          message.fileName = audioFile;
           console.log('--playaudio-- Audio file après TTS:', audioFile);
           await RNFS.writeFile(audioFile, ttsResult, 'base64');
+          message.fileName = audioFile;
         } catch (error) {
           console.error('Failed to generate TTS:', error);
           setIsLoading(false);
@@ -138,7 +142,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               <Icon name={isCurrentlyPlaying ? 'stop' : 'play'} size={24} color="white" />
             </TouchableOpacity>
           )}
-          {(message.fileName.endsWith('.mp4') || isCurrentlyPlaying) && (
+          { (
             <Slider
               style={styles.slider}
               minimumValue={0}

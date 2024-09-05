@@ -63,7 +63,7 @@ const BrainstormScreen: React.FC = () => {
     if (isRecording) {
       const result = await audioRecorderPlayer.stopRecorder();
       setIsRecording(false);
-      console.log('Stopped recording, file path: ', result);
+
       const transcription = await sendToWhisper(result);
       if (transcription) {
         const newFileName = generateFileName('user');
@@ -107,7 +107,6 @@ const BrainstormScreen: React.FC = () => {
       const fileName = generateFileName('user');
       const result = await audioRecorderPlayer.startRecorder(fileName);
       setIsRecording(true);
-      console.log('Started recording, file path: ', result);
     }
   };
 
@@ -120,9 +119,6 @@ const BrainstormScreen: React.FC = () => {
 
     const fileName = `${prefix}-${messageIndexRef.current}-${role}.mp4`;
     const directory = `${getSavedFileRootDirectory()}/_conversations/${prefix}`;
-
-    console.log('--generateFileName--Creating file:', fileName);
-    console.log('--generateFileName--Directory:', directory);
 
     RNFS.mkdir(directory, { NSURLIsExcludedFromBackupKey: false });
 
@@ -149,10 +145,10 @@ const BrainstormScreen: React.FC = () => {
 
   const renderMessage = ({ item }: { item: Message }) => (
     <MessageBubble
-      message={item}
-      conversationPrefix={conversationPrefix}
-      onAudioPlay={handleAudioPlay}
-      isCurrentlyPlaying={currentPlayingId === item.id}
+    message={item}
+    conversationPrefix={conversationPrefix}
+    onAudioPlay={handleAudioPlay}
+    isCurrentlyPlaying={currentPlayingId === item.id}
     />
   );
 

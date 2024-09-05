@@ -7,6 +7,7 @@ interface ConversationData {
   id: string;
   startTime: string;
   messages: Array<{
+    id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
@@ -45,6 +46,7 @@ export const updateConversationJson = async (conversationId: string, messages: a
 
     // Update the messages
     conversationData.messages = messages.map(msg => ({
+      id: msg.id,
       role: msg.role,
       content: msg.content,
       timestamp: msg.timestamp || new Date().toISOString(),
@@ -73,7 +75,7 @@ export const loadConversations = async (): Promise<ConversationData[]> => {
 
     return conversationsData;
   } catch (error) {
-    // console.error('Error loading conversations:', error);
+    console.error('Error loading conversations:', error);
     // Nothing, just assume no conversations exist
     return [];
   }

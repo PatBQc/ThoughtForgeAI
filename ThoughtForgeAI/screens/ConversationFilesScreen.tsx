@@ -62,15 +62,36 @@ const ConversationFilesScreen: React.FC = () => {
     setCurrentPlayingId(prevId => prevId === messageId ? null : messageId);
   };
 
-  const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => (
+  // const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => (
+  //   <MessageBubble
+  //     key={`${conversationId}-${item.id}-${index}`}
+  //     message={item}
+  //     conversationPrefix={conversationId}
+  //     onAudioPlay={handleAudioPlay}
+  //     isCurrentlyPlaying={currentPlayingId === item.id}
+  //   />
+  // );
+
+  const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => {
+    console.log('--tai-- ----------------------------------');
+    console.log('--tai-- Conversation item.content: ', item.content);
+    console.log('--tai-- Conversation item.fileName: ', item.fileName);
+    console.log('--tai-- Conversation item.id: ', item.id);
+    console.log('--tai-- Conversation item.role: ', item.role);
+    console.log('--tai-- Conversation conversationId: ', conversationId);
+    console.log('--tai-- Conversation index: ', index);
+    console.log('--tai-- Conversation currentPlayingId: ', index);
+    console.log('--tai-- ----------------------------------');
+
+    return (
     <MessageBubble
       key={`${conversationId}-${item.id}-${index}`}
       message={item}
       conversationPrefix={conversationId}
       onAudioPlay={handleAudioPlay}
       isCurrentlyPlaying={currentPlayingId === item.id}
-    />
-  );
+    />);
+  };
 
   const renderConversation = ({ item }: { item: Conversation }) => (
     <View style={styles.conversationContainer}>
