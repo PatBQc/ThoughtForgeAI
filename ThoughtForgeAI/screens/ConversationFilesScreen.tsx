@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadConversations, getConversationFiles, readConversationContent } from '../services/conversationService';
+import { getOrCreateNotebook, getOrCreateSection, createPageWithContent } from '../services/oneNoteService';
+import { formatConversationToHTML } from '../utils/formatConversation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MessageBubble from '../components/MessageBubble';
 import { useTheme } from '../theme/themeContext';
@@ -25,6 +27,7 @@ const ConversationFilesScreen: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedConversation, setExpandedConversation] = useState<string | null>(null);
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { theme } = useTheme();
 
@@ -66,6 +69,43 @@ const ConversationFilesScreen: React.FC = () => {
     setCurrentPlayingId(prevId => prevId === messageId ? null : messageId);
   };
 
+  const exportConversation = async (conversation: Conversation) => {
+    try {
+      setIsExporting(true);
+      // Obtenir ou créer un notebook
+      let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
+      
+      // Obtenir ou créer une section dans le notebook
+      let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
+  
+      // Formater et exporter la conversation
+      const htmlContent = formatConversationToHTML(conversation.messages, conversation.subject || 'Brainstorming Session');
+      await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
+  
+      Alert.alert('Success', 'Conversation exported to OneNote successfully!');
+    } catch (error) {
+      console.error('Error exporting conversation:', error);
+      Alert.alert('Error', 'Failed to export conversation. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const exportAllConversations = async () => {
+    try {
+      setIsExporting(true);
+      for (const conversation of conversations) {
+        await exportConversation(conversation);
+      }
+      Alert.alert('Success', 'All conversations exported to OneNote successfully!');
+    } catch (error) {
+      console.error('Error exporting all conversations:', error);
+      Alert.alert('Error', 'Failed to export all conversations. Some may have been exported.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const renderMessage = ({ item, index }: { item: Message; index: number }, conversationId: string) => (
     <MessageBubble
       key={`${conversationId}-${item.id}-${index}`}
@@ -94,18 +134,38 @@ const ConversationFilesScreen: React.FC = () => {
         </Text>
       </TouchableOpacity>
       {expandedConversation === item.id && (
-        <FlatList
-          data={item.messages}
-          renderItem={({ item: message, index }) => renderMessage({ item: message, index }, item.id)}
-          keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
-          style={styles.messageList}
-        />
+        <>
+          <FlatList
+            data={item.messages}
+            renderItem={({ item: message, index }) => renderMessage({ item: message, index }, item.id)}
+            keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
+            style={styles.messageList}
+          />
+          <TouchableOpacity 
+            style={[styles.exportButton, { backgroundColor: theme.primary }]} 
+            onPress={() => exportConversation(item)}
+            disabled={isExporting}
+          >
+            <Text style={styles.exportButtonText}>
+              {isExporting ? 'Exporting...' : 'Export to OneNote'}
+            </Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <TouchableOpacity 
+        style={[styles.exportAllButton, { backgroundColor: theme.primary }]} 
+        onPress={exportAllConversations}
+        disabled={isExporting}
+      >
+        <Text style={styles.exportButtonText}>
+          {isExporting ? 'Exporting...' : 'Export All to OneNote'}
+        </Text>
+      </TouchableOpacity>
       <FlatList
         data={conversations}
         renderItem={renderConversation}
@@ -166,6 +226,22 @@ const styles = StyleSheet.create({
   },
   messageList: {
     marginTop: 10,
+  },
+  exportButton: {
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  exportAllButton: {
+    padding: 10,
+    borderRadius: 5,
+    margin: 10,
+    alignItems: 'center',
+  },
+  exportButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

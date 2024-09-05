@@ -21,6 +21,7 @@ import { apiKeyService } from '../services/apiKeyService';
 import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from '@env';
 import { useTheme } from '../theme/themeContext';
 import { login, logout } from '../services/authService';
+import { createNotebook } from '../services/oneNoteService';
 
 const SettingsScreen: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
@@ -101,6 +102,17 @@ const SettingsScreen: React.FC = () => {
       console.error('Authentication error:', error);
       // Vous pouvez ajouter ici une alerte pour l'utilisateur
       alert('Authentication Error', 'An error occurred during authentication. Please try again.', error);
+    }
+  };
+
+  const handleCreateNotebook = async () => {
+    try {
+      const result = await createNotebook('ThoughtForgeAI Notebook');
+      alert('Success', 'Notebook created successfully!');
+      console.log('Notebook created:', result);
+    } catch (error) {
+      console.error('Error creating notebook:', error);
+      alert('Error', 'Failed to create notebook. Please try again.');
     }
   };
 
@@ -199,6 +211,14 @@ const SettingsScreen: React.FC = () => {
                   {isLoggedIn ? 'Disconnect' : 'Connect'}
                 </Text>
               </TouchableOpacity>
+              {isLoggedIn && (
+                <TouchableOpacity 
+                  style={styles.button} 
+                  onPress={handleCreateNotebook}
+                >
+                  <Text style={styles.buttonText}>Create OneNote Notebook</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
           </SafeAreaView>
