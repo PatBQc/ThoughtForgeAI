@@ -7,7 +7,7 @@ export const lightTheme = {
     messageBubbleUser: '#007AFF',
     messageBubbleAssistant: '#34C759',
   };
-  
+
   export const darkTheme = {
     background: '#1C1C1E',
     text: '#FFFFFF',
@@ -17,5 +17,5 @@ export const lightTheme = {
     messageBubbleUser: '#005C4B',
     messageBubbleAssistant: '#2C2C2E',
   };
-  
+
   export type Theme = typeof lightTheme;

@@ -131,8 +131,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     return (
       <View style={[
         styles.messageBubble,
-        message.role === 'user' 
-          ? [styles.userBubble, { backgroundColor: theme.messageBubbleUser }] 
+        message.role === 'user'
+          ? [styles.userBubble, { backgroundColor: theme.messageBubbleUser }]
           : [styles.aiBubble, { backgroundColor: theme.messageBubbleAssistant }],
         styles.minBubbleSize,
       ]}>

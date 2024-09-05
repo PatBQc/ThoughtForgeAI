@@ -103,8 +103,8 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setOpenAIFocused(false)}
                 />
               </View>
-              <Button 
-                title="Save OpenAI Key" 
+              <Button
+                title="Save OpenAI Key"
                 onPress={() => saveApiKey('OPENAI_API_KEY', openAIKey)}
                 color={theme.primary}
               />
@@ -124,8 +124,8 @@ const SettingsScreen: React.FC = () => {
                   onBlur={() => setAnthropicFocused(false)}
                 />
               </View>
-              <Button 
-                title="Save Anthropic Key" 
+              <Button
+                title="Save Anthropic Key"
                 onPress={() => saveApiKey('ANTHROPIC_API_KEY', anthropicKey)}
                 color={theme.primary}
               />
@@ -143,8 +143,8 @@ const SettingsScreen: React.FC = () => {
                   placeholderTextColor={theme.secondary}
                 />
               </View>
-              <Button 
-                title="Save System Prompt" 
+              <Button
+                title="Save System Prompt"
                 onPress={saveSystemPrompt}
                 color={theme.primary}
               />
@@ -155,8 +155,8 @@ const SettingsScreen: React.FC = () => {
               <Switch
                 value={isDark}
                 onValueChange={toggleTheme}
-                trackColor={{ false: "#767577", true: theme.primary }}
-                thumbColor={isDark ? theme.accent : "#f4f3f4"}
+                trackColor={{ false: '#767577', true: theme.primary }}
+                thumbColor={isDark ? theme.accent : '#f4f3f4'}
               />
             </View>
 

@@ -30,7 +30,7 @@ const BrainstormScreen: React.FC = () => {
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
-  
+
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -174,9 +174,9 @@ const BrainstormScreen: React.FC = () => {
       />
       <TouchableOpacity
         style={[
-          styles.button, 
+          styles.button,
           { backgroundColor: theme.primary },
-          isRecording && { backgroundColor: theme.accent }
+          isRecording && { backgroundColor: theme.accent },
         ]}
         onPress={toggleRecording}
       >
