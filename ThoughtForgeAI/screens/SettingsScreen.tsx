@@ -12,6 +12,7 @@ import {
   ScrollView,
   Keyboard,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +20,7 @@ import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 import { apiKeyService } from '../services/apiKeyService';
 import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from '@env';
 import { useTheme } from '../theme/themeContext';
-
+import { login, logout } from '../services/authService';
 
 const SettingsScreen: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
@@ -28,6 +29,7 @@ const SettingsScreen: React.FC = () => {
   const [openAIFocused, setOpenAIFocused] = useState(false);
   const [anthropicFocused, setAnthropicFocused] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { theme, isDark, toggleTheme } = useTheme();
 
@@ -60,6 +62,15 @@ const SettingsScreen: React.FC = () => {
     }, [])
   );
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('oneNoteAccessToken');
+      setIsLoggedIn(!!token);
+    };
+    
+    checkLoginStatus();
+  }, []);
+
   const saveSystemPrompt = async () => {
     try {
       await AsyncStorage.setItem('SYSTEM_PROMPT', systemPrompt);
@@ -73,6 +84,24 @@ const SettingsScreen: React.FC = () => {
   const saveApiKey = async (provider: string, key: string) => {
     await apiKeyService.saveApiKey(provider, key);
     alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API key saved successfully!`);
+  };
+
+  const handleAuthAction = async () => {
+    try {
+      if (isLoggedIn) {
+        await logout();
+        setIsLoggedIn(false);
+      } else {
+        const result = await login();
+        if (result.accessToken) {
+          setIsLoggedIn(true);
+        }
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      // Vous pouvez ajouter ici une alerte pour l'utilisateur
+      alert('Authentication Error', 'An error occurred during authentication. Please try again.', error);
+    }
   };
 
   return (
@@ -160,6 +189,18 @@ const SettingsScreen: React.FC = () => {
               />
             </View>
 
+            <View style={styles.section}>
+              <Text style={[styles.text, { color: theme.text }]}>Microsoft OneDrive and OneNote Integration</Text>
+              <TouchableOpacity 
+                style={styles.button} 
+                onPress={handleAuthAction}
+              >
+                <Text style={styles.buttonText}>
+                  {isLoggedIn ? 'Disconnect' : 'Connect'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
           </SafeAreaView>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -199,6 +240,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
   },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },  
 });
 
 export default SettingsScreen;

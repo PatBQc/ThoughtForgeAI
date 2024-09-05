@@ -1,4 +1,5 @@
 import { authorize, refresh, revoke } from 'react-native-app-auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MICROSOFT_CLIENT_ID } from '@env';
 
 const config = {
@@ -9,13 +10,19 @@ const config = {
   serviceConfiguration: {
     authorizationEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
     tokenEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+    revocationEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/logout',
   },
 };
 
 export const login = async () => {
   try {
     const result = await authorize(config);
-    // Stockez le résultat (tokens, etc.) de manière sécurisée
+    if (result.accessToken) {
+      await AsyncStorage.setItem('oneNoteAccessToken', result.accessToken);
+    }
+    if (result.refreshToken) {
+      await AsyncStorage.setItem('oneNoteRefreshToken', result.refreshToken);
+    }
     return result;
   } catch (error) {
     console.error('Error during login:', error);
@@ -23,10 +30,19 @@ export const login = async () => {
   }
 };
 
-export const refreshToken = async (refreshToken: string) => {
+export const refreshToken = async () => {
   try {
+    const refreshToken = await AsyncStorage.getItem('oneNoteRefreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
     const result = await refresh(config, { refreshToken });
-    // Mettez à jour les tokens stockés
+    if (result.accessToken) {
+      await AsyncStorage.setItem('oneNoteAccessToken', result.accessToken);
+    }
+    if (result.refreshToken) {
+      await AsyncStorage.setItem('oneNoteRefreshToken', result.refreshToken);
+    }
     return result;
   } catch (error) {
     console.error('Error refreshing token:', error);
@@ -34,12 +50,18 @@ export const refreshToken = async (refreshToken: string) => {
   }
 };
 
-export const logout = async (tokenToRevoke: string) => {
+export const logout = async () => {
   try {
-    await revoke(config, { tokenToRevoke });
-    // Nettoyez les tokens stockés localement
+    const accessToken = await AsyncStorage.getItem('oneNoteAccessToken');
+    if (accessToken) {
+      await revoke(config, { tokenToRevoke: accessToken });
+    }
+    await AsyncStorage.removeItem('oneNoteAccessToken');
+    await AsyncStorage.removeItem('oneNoteRefreshToken');
   } catch (error) {
     console.error('Error during logout:', error);
-    throw error;
+    // Même si la révocation échoue, nous supprimons les tokens localement
+    await AsyncStorage.removeItem('oneNoteAccessToken');
+    await AsyncStorage.removeItem('oneNoteRefreshToken');
   }
 };
