@@ -1,15 +1,14 @@
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useTheme } from './theme/themeContext';
 
-type TabIconProps = {
+interface TabIconProps {
   focused: boolean;
+  color: string;
   size: number;
   routeName: string;
-};
+}
 
-const TabIcon: React.FC<TabIconProps> = ({ focused, size, routeName }) => {
-  const { theme } = useTheme();
+const TabIcon: React.FC<TabIconProps> = ({ focused, color, size, routeName }) => {
   let iconName: string;
 
   switch (routeName) {
@@ -25,8 +24,6 @@ const TabIcon: React.FC<TabIconProps> = ({ focused, size, routeName }) => {
     default:
       iconName = 'alert-circle-outline';
   }
-
-  const color = focused ? theme.primary : theme.text;
 
   return <Icon name={iconName} size={size} color={color} />;
 };
