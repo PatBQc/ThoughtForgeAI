@@ -1,12 +1,11 @@
-import React, { useState, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
-import TrackPlayer, { Event } from 'react-native-track-player';
+import Sound from 'react-native-sound';
 import RNFS from 'react-native-fs';
 import { generateTTS } from '../services/openAIService';
 import { useTheme } from '../theme/themeContext';
-import { PlayerContext } from '../App'; // Assurez-vous que le chemin d'importation est correct
 
 interface Message {
   id: string;
@@ -33,18 +32,38 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [duration, setDuration] = useState(0);
     const [progress, setProgress] = useState(0);
+    const soundRef = useRef<Sound | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const { theme } = useTheme();
-    const { isPlayerReady } = useContext(PlayerContext);
+
+    useEffect(() => {
+      return () => {
+        if (soundRef.current) {
+          soundRef.current.stop();
+          soundRef.current.release();
+        }
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    }, []);
+
+    useEffect(() => {
+      if (!isCurrentlyPlaying && soundRef.current) {
+        soundRef.current.stop();
+        setProgress(0);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      }
+    }, [isCurrentlyPlaying]);
 
     const playAudio = useCallback(async () => {
-      if (!isPlayerReady) {
-        console.warn('TrackPlayer is not ready yet');
-        return;
-      }
-
       if (isCurrentlyPlaying) {
-        await TrackPlayer.pause();
+        if (soundRef.current) {
+          soundRef.current.stop();
+        }
         onAudioPlay('');
         return;
       }
@@ -71,41 +90,42 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
 
       setIsLoading(true);
-      try {
-        await TrackPlayer.reset();
-        await TrackPlayer.add({
-          url: `file://${audioFile}`,
-          title: 'Audio Message',
-          artist: message.role,
-        });
+      const newSound = new Sound(audioFile, '', (error) => {
+        setIsLoading(false);
+        if (error) {
+          console.error('Failed to load the sound', error);
+          return;
+        }
 
-        const durationInner = await TrackPlayer.getDuration();
-        setDuration(durationInner);
+        setDuration(newSound.getDuration());
+        soundRef.current = newSound;
 
-        await TrackPlayer.play();
-        onAudioPlay(message.id);
-
-        TrackPlayer.addEventListener(Event.PlaybackTrackChanged, async (event) => {
-          if (event.nextTrack === null) {
-            onAudioPlay('');
-            setProgress(0);
+        newSound.play((success) => {
+          if (success) {
+            console.log('Successfully finished playing');
+          } else {
+            console.log('Playback failed due to audio decoding errors');
+          }
+          onAudioPlay('');
+          setProgress(0);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
           }
         });
 
-        TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, (event) => {
-          setProgress(event.position);
-        });
+        onAudioPlay(message.id);
 
-      } catch (error) {
-        console.error('Failed to play audio:', error);
-      } finally {
-        setIsLoading(false);
+        intervalRef.current = setInterval(() => {
+          newSound.getCurrentTime((seconds) => setProgress(seconds));
+        }, 100);
+      });
+    }, [message, onAudioPlay, isCurrentlyPlaying]);
+
+    const onSliderValueChange = useCallback((value: number) => {
+      if (soundRef.current) {
+        soundRef.current.setCurrentTime(value);
+        setProgress(value);
       }
-    }, [message, onAudioPlay, isCurrentlyPlaying, isPlayerReady]);
-
-    const onSliderValueChange = useCallback(async (value: number) => {
-      await TrackPlayer.seekTo(value);
-      setProgress(value);
     }, []);
 
     return (
@@ -122,7 +142,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             <ActivityIndicator size="small" color="white" />
           ) : (
             <TouchableOpacity onPress={playAudio}>
-              <Icon name={isCurrentlyPlaying ? 'pause' : 'play'} size={24} color="white" />
+              <Icon name={isCurrentlyPlaying ? 'stop' : 'play'} size={24} color="white" />
             </TouchableOpacity>
           )}
           {(
