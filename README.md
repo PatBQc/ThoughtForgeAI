@@ -1,3 +1,5 @@
+![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/new%20logo/banner.png)
+
 # ThoughtForgeAI
 
 ThoughtForgeAI is a cutting-edge React Native application designed to revolutionize brainstorming sessions through AI assistance. It enables users to engage in voice conversations with advanced AI models (such as OpenAI's GPT or Anthropic's Claude), record these sessions, and efficiently manage the resulting knowledge base.
@@ -92,14 +94,17 @@ ThoughtForgeAI is a cutting-edge React Native application designed to revolution
 
 ### BrainstormScreen
 ![image](https://github.com/user-attachments/assets/9ebe8d33-ed65-4c2f-ae34-bf5ebcd9230e)
+
 The core of the application where users interact with the AI, record voice inputs, and view conversation history.
 
 ### ConversationFilesScreen
 ![image](https://github.com/user-attachments/assets/2022ddf6-74ff-4ffe-95ea-e93f4815335e)
+
 Displays all recorded conversations with options to view details, play audio, and export to OneNote.
 
 ### SettingsScreen
 ![image](https://github.com/user-attachments/assets/8be78d6b-e31b-4fcb-a6c9-21c5fcd77701)
+
 Allows users to configure API keys, toggle themes, and manage OneNote integration.
 
 ### MessageBubble
