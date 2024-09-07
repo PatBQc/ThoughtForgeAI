@@ -93,8 +93,8 @@ ThoughtForgeAI is a cutting-edge React Native application designed to revolution
 ## Key Components
 
 ### BrainstormScreen
-![image](https://github.com/user-attachments/assets/9ebe8d33-ed65-4c2f-ae34-bf5ebcd9230e)
-
+![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-brainstorm.png)
+![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-brainstorm.png)
 The core of the application where users interact with the AI, record voice inputs, and view conversation history.
 
 ### ConversationFilesScreen
