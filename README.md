@@ -93,17 +93,38 @@ ThoughtForgeAI is a cutting-edge React Native application designed to revolution
 ## Key Components
 
 ### BrainstormScreen
-![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-brainstorm.png)
-![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-brainstorm.png)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-brainstorm.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-brainstorm.png" width="25%" style="margin: 20px;">
+  </a>
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-brainstorm.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-brainstorm.png" width="25%" style="margin: 20px;">
+  </a>
+</p>
+
 The core of the application where users interact with the AI, record voice inputs, and view conversation history.
 
 ### ConversationFilesScreen
-![image](https://github.com/user-attachments/assets/2022ddf6-74ff-4ffe-95ea-e93f4815335e)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-conversations.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-conversations.png" width="25%" style="margin: 20px;">
+  </a>
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-conversations.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-conversations.png" width="25%" style="margin: 20px;">
+  </a>
+</p>
 
 Displays all recorded conversations with options to view details, play audio, and export to OneNote.
 
 ### SettingsScreen
-![image](https://github.com/user-attachments/assets/8be78d6b-e31b-4fcb-a6c9-21c5fcd77701)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-settings.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/light-settings.png" width="25%" style="margin: 20px;">
+  </a>
+  <a href="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-settings.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/screenshots/dark-settings.png" width="25%" style="margin: 20px;">
+  </a>
+</p>
 
 Allows users to configure API keys, toggle themes, and manage OneNote integration.
 
