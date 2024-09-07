@@ -10,7 +10,7 @@ ThoughtForgeAI is a cutting-edge React Native application designed to revolution
 - High-quality audio playback of recorded sessions
 - Cross-platform support 
   - Developed on Android
-  = Windows work with react-native-windows and Electron but no release yet
+  - Windows work with react-native-windows and Electron but no release yet
   - iOS not addressed yet
 - Data synchronization with OneDrive
 - Integration with OneNote for structured knowledge base management
