@@ -160,7 +160,7 @@ const BrainstormScreen: React.FC = () => {
       <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.secondary }]}>
         <TouchableOpacity onPress={startNewConversation} style={styles.newConversationButton}>
           <Icon name="refresh-outline" size={24} color={theme.primary} />
-          <Text style={[styles.newConversationText, { color: theme.primary }]}>Nouvelle conversation</Text>
+          <Text style={[styles.newConversationText, { color: theme.primary }]}>New conversation</Text>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -181,7 +181,7 @@ const BrainstormScreen: React.FC = () => {
         onPress={toggleRecording}
       >
         <Text style={[styles.buttonText, { color: theme.background }]}>
-          {isRecording ? 'Arrêter l\'enregistrement' : 'Commencer l\'enregistrement'}
+          {isRecording ? 'Stop Recording' : 'Start recording'}
         </Text>
       </TouchableOpacity>
     </SafeAreaView>

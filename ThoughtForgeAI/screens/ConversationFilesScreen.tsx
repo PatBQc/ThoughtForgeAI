@@ -75,10 +75,10 @@ const ConversationFilesScreen: React.FC = () => {
   const exportConversation = async (conversation: Conversation) => {
     try {
       setExportingConversationId(conversation.id);
-      
+
       // Obtenir ou créer un notebook
       let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
-      
+
       // Obtenir ou créer une section dans le notebook
       let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
 
@@ -96,10 +96,10 @@ const ConversationFilesScreen: React.FC = () => {
   const exportAllConversations = async () => {
     try {
       setExportAllProgress(0);
-      
+
       // Obtenir ou créer un notebook
       let notebook = await getOrCreateNotebook('ThoughtForgeAI Notebook');
-      
+
       // Obtenir ou créer une section dans le notebook
       let section = await getOrCreateSection(notebook.id, 'Brainstorming Sessions');
 
@@ -108,7 +108,7 @@ const ConversationFilesScreen: React.FC = () => {
         // Formater et exporter la conversation
         const htmlContent = formatConversationToHTML(conversation.messages, conversation.subject || 'Brainstorming Session');
         await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
-        
+
         // Mettre à jour la progression
         setExportAllProgress((i + 1) / conversations.length);
       }
@@ -157,8 +157,8 @@ const ConversationFilesScreen: React.FC = () => {
             keyExtractor={(message, index) => `${item.id}-${message.id}-${index}`}
             style={styles.messageList}
           />
-          <TouchableOpacity 
-            style={[styles.exportButton, { backgroundColor: theme.primary }]} 
+          <TouchableOpacity
+            style={[styles.exportButton, { backgroundColor: theme.primary }]}
             onPress={() => exportConversation(item)}
             disabled={exportingConversationId !== null}
           >
@@ -177,9 +177,9 @@ const ConversationFilesScreen: React.FC = () => {
     if (exportAllProgress !== null) {
       return (
         <View style={styles.progressBarContainer}>
-          <Progress.Bar 
-            progress={exportAllProgress} 
-            width={null} 
+          <Progress.Bar
+            progress={exportAllProgress}
+            width={null}
             height={40}
             color={theme.primary}
             borderWidth={0}
@@ -193,12 +193,12 @@ const ConversationFilesScreen: React.FC = () => {
     }
 
     return (
-      <TouchableOpacity 
-        style={[styles.exportAllButton, { backgroundColor: theme.primary }]} 
+      <TouchableOpacity
+        style={[styles.exportAllButton, { backgroundColor: theme.primary }]}
         onPress={exportAllConversations}
         disabled={exportingConversationId !== null || exportAllProgress !== null}
       >
-        <Text style={styles.exportButtonText}>Export All to OneNote</Text>
+        <Text style={styles.exportButtonText}>Export Conversations to OneNote</Text>
       </TouchableOpacity>
     );
   };
