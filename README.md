@@ -1,3 +1,5 @@
+![ThoughtForgeAI Banner](https://raw.githubusercontent.com/PatBQc/ThoughtForgeAI/main/metadata/new%20logo/banner.png)
+
 # ThoughtForgeAI
 
 ThoughtForgeAI is a cutting-edge React Native application designed to revolutionize brainstorming sessions through AI assistance. It enables users to engage in voice conversations with advanced AI models (such as OpenAI's GPT or Anthropic's Claude), record these sessions, and efficiently manage the resulting knowledge base.
