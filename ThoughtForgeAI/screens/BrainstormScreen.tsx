@@ -10,6 +10,7 @@ import { updateConversationJson } from '../services/conversationService';
 import { generateAudioFileName, getSavedFileRootDirectory } from '../utils/utils';
 import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/Ionicons';
+import KeepAwake from 'react-native-keep-awake';
 import MessageBubble from '../components/MessageBubble';
 import { useTheme } from '../theme/themeContext';
 
@@ -50,6 +51,18 @@ const BrainstormScreen: React.FC = () => {
     }
   }, [conversationPrefix]);
 
+  useEffect(() => {
+    if (isRecording) {
+      KeepAwake.activate();
+    } else {
+      KeepAwake.deactivate();
+    }
+
+    return () => {
+      KeepAwake.deactivate();
+    };
+  }, [isRecording]);
+
   const scrollToBottom = () => {
     flatListRef.current?.scrollToEnd({ animated: true });
   };
@@ -66,6 +79,7 @@ const BrainstormScreen: React.FC = () => {
     if (isRecording) {
       const result = await audioRecorderPlayer.stopRecorder();
       setIsRecording(false);
+      KeepAwake.deactivate();
 
       const transcription = await sendToWhisper(result);
       if (transcription) {
@@ -110,6 +124,7 @@ const BrainstormScreen: React.FC = () => {
       const fileName = generateFileName('user');
       const result = await audioRecorderPlayer.startRecorder(fileName);
       setIsRecording(true);
+      KeepAwake.activate();
     }
   };
 
