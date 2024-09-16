@@ -87,7 +87,7 @@ const ConversationFilesScreen: React.FC = () => {
       await createPageWithContent(section.id, conversation.subject || `Session ${conversation.id}`, htmlContent);
     } catch (error) {
       console.error('Error exporting conversation:', error);
-      Alert.alert('Error', 'Failed to export conversation. Please try again.');
+      Alert.alert('Error', 'Failed to export conversation. Please try again.  Error: ' + error);
     } finally {
       setExportingConversationId(null);
     }
